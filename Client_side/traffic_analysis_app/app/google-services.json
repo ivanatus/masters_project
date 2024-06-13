@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039415271495",
+    "project_id": "mastersproject-634d8",
+    "storage_bucket": "mastersproject-634d8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039415271495:android:8f6c259367964392ddd162",
+        "android_client_info": {
+          "package_name": "com.example.traffic_analysis_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwEjCTCs0Xkj0rgCLkQV6IGDFYvi6wcgE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
