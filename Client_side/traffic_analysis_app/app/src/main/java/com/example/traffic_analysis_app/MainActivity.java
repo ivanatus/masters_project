@@ -27,6 +27,16 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polyline;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     MapView mapView;
@@ -35,8 +45,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
     BottomNavigationView bottom_navigation;
     private NominatimService nominatimService;
+    private RoutingService routingService;
     EditText address;
     ImageButton search;
+    GeoPoint current_location;
 
 
     @Override
@@ -72,6 +84,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         nominatimService = new NominatimService();
         address = findViewById(R.id.address_search);
         search = findViewById(R.id.search_address);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://router.project-osrm.org/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        routingService = retrofit.create(RoutingService.class);
 
         // 1. Check and request permissions at runtime (for Android 6.0+)
         if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -125,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         // Center the map to the new location
         GeoPoint currentLocation = new GeoPoint(latitude, longitude);
+        current_location = currentLocation;
         mapView.getController().setCenter(currentLocation);
         Marker marker = new Marker(mapView);
         marker.setPosition(new GeoPoint(latitude, longitude));
@@ -132,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         // Zoom to the new location
         mapView.getController().setZoom(18); // Adjust the zoom level as needed
+        mapView.getController().setCenter(currentLocation);
     }
 
     public void getCoordinatesForAddress(String address) {
@@ -145,6 +166,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 marker.setPosition(geoPoint);
                 mapView.getOverlays().add(marker);
                 mapView.getController().setZoom(18);
+
+                marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker, MapView mapView) {
+                        getDirections(current_location, geoPoint);
+                        return false;
+                    }
+                });
             }
 
             @Override
@@ -153,5 +182,48 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 Toast.makeText(MainActivity.this, "Failed to get coordinates", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void getDirections(GeoPoint start, GeoPoint end) {
+        if (start == null) {
+            Toast.makeText(this, "Invalid start location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (end == null) {
+            Toast.makeText(this, "Invalid end location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String startCoords = start.getLongitude() + "," + start.getLatitude();
+        String endCoords = end.getLongitude() + "," + end.getLatitude();
+
+        Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
+        call.enqueue(new Callback<RoutingResponse>() {
+            @Override
+            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<GeoPoint> routePoints = new ArrayList<>();
+                    for (List<Double> point : response.body().routes.get(0).geometry.coordinates) {
+                        routePoints.add(new GeoPoint(point.get(1), point.get(0)));
+                    }
+                    drawRoute(routePoints);
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RoutingResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void drawRoute(List<GeoPoint> routePoints) {
+        Polyline routeLine = new Polyline();
+        routeLine.setPoints(routePoints);
+        mapView.getOverlays().add(routeLine);
+        mapView.invalidate();
+        mapView.getController().setZoom(15);
     }
 }
