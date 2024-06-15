@@ -85,6 +85,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         address = findViewById(R.id.address_search);
         search = findViewById(R.id.search_address);
 
+        if (mapView != null) {
+            mapView.setTileSource(TileSourceFactory.MAPNIK);
+            mapView.setMultiTouchControls(true);
+        } else {
+            Log.e("MainActivity", "MapView is null");
+            return;
+        }
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://router.project-osrm.org/")
                 .addConverterFactory(GsonConverterFactory.create())

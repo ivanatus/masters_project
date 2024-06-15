@@ -20,33 +20,30 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class RecordingActivity extends AppCompatActivity {
@@ -140,7 +137,7 @@ public class RecordingActivity extends AppCompatActivity {
                     Toast.makeText(this, "RECORDING STOPPED", Toast.LENGTH_SHORT).show();
                     //String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
                     Uri videoUri = ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
-                    //sendToFirebase(videoUri);
+                    sendToFirebase(videoUri);
                     //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 } else { //error while stopping the video
                     if(recording != null) {
@@ -185,5 +182,37 @@ public class RecordingActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }, ContextCompat.getMainExecutor(RecordingActivity.this));
+    }
+
+    //send video to Firebase Storage with name "uid_date-and-time-of-recording.mp4" in Videos/New/ folder
+    public void sendToFirebase(Uri uri) {
+        //String uid = FirebaseAuth.getInstance().getUid();
+        //String filename = uid + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
+        //String filename = new File(uri.getPath()).getName();
+        //String filename = getFileNameFromUri(uri);
+        String filename = "demo";
+
+        Log.d("SLANJE VIDEA", filename + " iz sendtofb");
+
+        StorageReference reference = FirebaseStorage.getInstance().getReference("Videos/" + filename);
+        reference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) { //the video is successfully sent to Firebase and deleted from the device
+                Toast.makeText(RecordingActivity.this, "Video poslan u bazu.", Toast.LENGTH_SHORT).show();
+                //deleteVideoFromDevice(uri);
+                DatabaseReference database_reference = FirebaseDatabase.getInstance().getReference();
+                database_reference.child("Unanalyzed").setValue(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() { //the video failed to upload to the Firebase
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(RecordingActivity.this, "Došlo je do greške: "+ e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() { //show progress of uploading the video to the database
+            @Override
+            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                Toast.makeText(RecordingActivity.this, "Progress: " + Math.toIntExact(snapshot.getBytesTransferred()) + "/" + Math.toIntExact(snapshot.getTotalByteCount()), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
