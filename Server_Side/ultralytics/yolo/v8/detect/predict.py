@@ -26,7 +26,7 @@ import numpy as np
 
 import sys
 import os
-linux_path = os.path.expanduser("~/KIK_projekt/ultralytics/yolo/v8/detect/deep_sort_pytorch/deep_sort/sort")
+linux_path = os.path.expanduser("~/masters_project/Server_Side/ultralytics/yolo/v8/detect/deep_sort_pytorch/deep_sort/sort") #update with the correct path
 sys.path.append(linux_path)
 import csv
 
@@ -46,9 +46,9 @@ def init_tracker():
 
     
     with open(global_instance.filename + '_per_frame.csv', 'a', newline='') as csvfile:
-            fieldnames = ['frame', 'people', 'buses', 'cars', 'trucks',]
+            fieldnames = ['frame', 'people', 'buses', 'cars', 'trucks', 'bikes', 'trains', 'motorbike']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow({'frame': "Frame", 'people': "People", 'buses': "Buses", 'cars': "Cars", 'trucks': "Trucks"})
+            writer.writerow({'frame': "Frame", 'people': "People", 'buses': "Buses", 'cars': "Cars", 'trucks': "Trucks", 'bikes': "Bikes", 'trains': "Trains", "motorbike": "Motorbikes"})
 
     with open(global_instance.filename + '_vehicles_ids.csv', 'a', newline='') as csvfile:
             fieldnames = ['frame', 'id', 'type']
@@ -97,20 +97,18 @@ def compute_color_for_labels(label):
     """
     if label == 0: #person
         color = (85,45,255)
-    elif label == 2: # Car
+    elif label == 2: #car
         color = (222,82,175)
-    elif label == 3:  # Motobike
+    elif label == 3:  #motorbike
         color = (0, 204, 255)
-    elif label == 5:  # Bus
+    elif label == 5:  #bus
         color = (0, 149, 255)
-    #####################################################################
     elif label == 1: #bike
         color = (0, 0, 255)
     elif label == 7: #truck
         color = (255, 0, 0)
     elif label == 9: #train
         color = (0, 255, 0)
-    ######################################################################
     else:
         color = [int((p * (label ** 2 - label + 1)) % 255) for p in palette]
     return tuple(color)
@@ -194,7 +192,7 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             write_ids(id, obj_name)
             print(global_instance.vehicle_ids)
         
-        if(obj_name not in ['person', 'bike', 'bus', 'car', 'train', 'truck']):
+        if(obj_name not in ['person', 'bike', 'bus', 'car', 'train', 'truck', 'motorbike']):
             return None
             
         # add center to buffer
@@ -248,6 +246,7 @@ class DetectionPredictor(BasePredictor):
         num_buses = 0
         num_trucks = 0
         num_trains = 0
+        num_motors = 0
 
 
         for i, pred in enumerate(preds):
@@ -260,10 +259,12 @@ class DetectionPredictor(BasePredictor):
                      # Increment the respective counter based on the label
                     if label == 0:
                         num_people += 1
+                    elif label == 1:
+                        num_bikes += 1
                     elif label == 2:
                         num_cars += 1
                     elif label == 3:
-                        num_bikes += 1
+                        num_motors += 1
                     elif label == 5:
                         num_buses += 1
                     elif label == 7:
@@ -280,6 +281,7 @@ class DetectionPredictor(BasePredictor):
         global_instance.no_of_buses=num_buses
         global_instance.no_of_trucks=num_trucks
         global_instance.no_of_trains=num_trains
+        global_instance.no_of_motors=num_motors
 
         # Return the filtered detections and the counts of each class
         return preds
@@ -399,12 +401,10 @@ def analyze_and_plot():
     frames = df_per_frame.iloc[:, 0].values 
     cars = df_per_frame.iloc[:, 3].values 
     buses = df_per_frame.iloc[:, 2].values 
-    trucks = df_per_frame.iloc[:, 4].values 
-
-    print(frames)
-    print(cars)
-    print(buses)
-    print(trucks)
+    trucks = df_per_frame.iloc[:, 4].values
+    bikes = df_per_frame.iloc[:, 5].values
+    trains = df_per_frame.iloc[:, 6].values
+    motorbikes = df_per_frame.iloc[:, 7].values  
 
     car_mean = mean(cars)
     global_instance.car_means.append(car_mean)
@@ -418,7 +418,18 @@ def analyze_and_plot():
     global_instance.truck_means.append(trucks_mean)
     trucks_median = median(trucks)
     truck_std = stdev(trucks)
-
+    train_mean = mean(trains)
+    global_instance.train_means.append(train_mean)
+    train_median = median(trains)
+    train_std = stdev(trains)
+    bikes_mean = mean(bikes)
+    global_instance.bike_means.append(bikes_mean)
+    bikes_median = median(bikes)
+    bikes_std = stdev(bikes)
+    motorbikes_mean = mean(motorbikes)
+    global_instance.motorbike_means.append(motorbikes_mean)
+    motorbikes_median = median(motorbikes)
+    motorbikes_std = stdev(motorbikes)
 
     # Plot histogram and linechart for cars
     plt.bar(frames, cars, width=1.0, alpha=0.7, label='Cars')
@@ -483,6 +494,9 @@ def analyze_and_plot():
     cars_overall = 0
     trucks_overall = 0
     buses_overall = 0
+    trains_overall = 0
+    bikes_overall = 0
+    motorbikes_overall = 0
 
     for type in types_of_vehicles:
         if type == 'car':
@@ -491,6 +505,12 @@ def analyze_and_plot():
             trucks_overall += 1
         elif type == 'bus':
             buses_overall += 1
+        elif type == 'motorbike':
+            motorbikes_overall += 1
+        elif type == 'train':
+            trains_overall += 1
+        elif type == 'bike':
+            bikes_overall += 1
 
     with open('descriptive_stats.csv', 'a', newline='') as csvfile:
             fieldnames = ['video', 'mean_car', 'med_car', 'std_car', 'cars_overall', 'mean_bus', 'med_bus', 'std_bus', 'bus_overall', 'mean_truck', 'med_truck', 'std_truck', 'truck_overall']
@@ -498,9 +518,9 @@ def analyze_and_plot():
             writer.writerow({'video': global_instance.filename, 'mean_car': car_mean, 'med_car': car_median, 'std_car': car_std, 'cars_overall': cars_overall, 'mean_bus': buses_mean, 'med_bus': buses_median, 'std_bus': bus_std, 'bus_overall': buses_overall, 'mean_truck': trucks_mean, 'med_truck': trucks_median, 'std_truck': truck_std, 'truck_overall': trucks_overall})
 
     # Plot pie chart of distribution of vehicles
-    labels = ['Cars', 'Trucks', 'Buses']
-    sizes = [cars_overall, trucks_overall, buses_overall]
-    colors = ['red','orange', 'yellow']
+    labels = ['Cars', 'Trucks', 'Buses', 'Trains', 'Bikes', 'Motorbikes']
+    sizes = [cars_overall, trucks_overall, buses_overall, trains_overall, bikes_overall, motorbikes_overall]
+    colors = ['red','orange', 'yellow', 'green', 'blue', 'purple']
     explode = (0.1, 0, 0)
     plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
     plt.axis('equal')
