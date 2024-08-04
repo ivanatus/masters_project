@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -44,6 +45,10 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.osmdroid.util.GeoPoint;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 public class RecordingActivity extends AppCompatActivity {
@@ -61,11 +66,17 @@ public class RecordingActivity extends AppCompatActivity {
             startCamera(camera_facing);
         }
     });
+    GeoPoint current_location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recording);
+
+        Intent intent = getIntent();
+        double latitude = intent.getDoubleExtra("current_location_latitude", 0);
+        double longitude = intent.getDoubleExtra("current_location_longitude", 0);
+        current_location = new GeoPoint(latitude, longitude);
 
         capture_video = findViewById(R.id.video_capture);
         preview_view = findViewById(R.id.camera_preview);
@@ -186,11 +197,19 @@ public class RecordingActivity extends AppCompatActivity {
 
     //send video to Firebase Storage with name "uid_date-and-time-of-recording.mp4" in Videos/New/ folder
     public void sendToFirebase(Uri uri) {
-        //String uid = FirebaseAuth.getInstance().getUid();
-        //String filename = uid + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
-        //String filename = new File(uri.getPath()).getName();
-        //String filename = getFileNameFromUri(uri);
-        String filename = "demo";
+        double latitude = current_location.getLatitude();
+        double longitude = current_location.getLongitude();
+
+        // Get the current date and time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY_MM_dd");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+        Date now = new Date();
+
+        String date = dateFormat.format(now);
+        String time = timeFormat.format(now);
+
+        // Format the filename
+        String filename = String.format("%s_%s-%s-%s", latitude, longitude, date, time);
 
         Log.d("SLANJE VIDEA", filename + " iz sendtofb");
 

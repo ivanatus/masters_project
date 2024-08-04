@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
                 if(id == R.id.recording){
                     Intent recording = new Intent(getApplicationContext(), RecordingActivity.class);
+                    recording.putExtra("current_location_latitude", current_location.getLatitude());
+                    recording.putExtra("current_location_longitude", current_location.getLongitude());
                     startActivity(recording);
                     finish();
                 } else if(id == R.id.info){
