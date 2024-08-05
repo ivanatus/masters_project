@@ -37,7 +37,7 @@ def get_video_from_database():
     unanalyzed = True
 
     #has to be changed dependent on computer from which the code is being run
-    video_directory = "video/"
+    video_directory = "video_traffic_app/"
 
     #download all videos from Firebase Storage to video folder and delete them from Firebase
     for blob in blobs:    
@@ -69,13 +69,13 @@ def call_yolo_script():
         predict_script_path,
         "model=yolov8l.pt",
         "show=False",
-        "source=video"
+        "source=video_traffic_app"
     ]
 
     subprocess.run(predict_command)
 
 if __name__ == "__main__":
     # Specify the directory path - computer dependent
-    directory_path = "video/"
+    directory_path = "video_traffic_app/"
     create_directory(directory_path)
     get_video_from_database()

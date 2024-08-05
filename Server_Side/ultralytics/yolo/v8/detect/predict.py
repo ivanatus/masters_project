@@ -371,32 +371,41 @@ def predict(cfg, filename):
 
 @hydra.main(config_path=str(DEFAULT_CONFIG.parent), config_name=DEFAULT_CONFIG.name, version_base=None)
 def predict(cfg):
+    print("in hydra main predict,py")
     init_tracker()
     cfg.model = cfg.model or "yolov8n.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    # cfg.source will be the directory containing the video files
+    # cfg.source is the directory containing the video files
     source_directory = hydra.utils.to_absolute_path(cfg.source)
+    print(source_directory)
     for filename in os.scandir(source_directory):
-        if filename.is_file() and filename.name.endswith('.avi'):
+        print(filename)
+        if filename.is_file():
             predictor = DetectionPredictor(cfg)
             predictor(filename.path)
             global_instance.filename = filename.name
+            info = filename.split('_')
+            print(f"Latitude: {info[0]}")
+            print(f"Longitude: {info[1]}")
+            print(f"Date: {info[2]}")
+            print(f"Time: {info[3]}")
             global_instance.processed_files.append(global_instance.filename)
 
 """
 Function that is called at the very end of execution. Analyses and plots collected data.
 TO DO
 """
-def analyze_and_plot():
+def analyze_and_plot(info):
     if os.path.exists(global_instance.filename + '_per_frame.csv'):
         df_per_frame = pd.read_csv(global_instance.filename + '_per_frame.csv')
     else:
         df_per_frame = pd.read_csv('_per_frame.csv')
 
-    #frames = df_per_frame["Frame"].values
-    #cars = df_per_frame["Cars"].values
-    #buses = df_per_frame["Buses"].values
-    #trucks = df_per_frame["Trucks"].values
+    latitude = info[0]
+    longitude = info[1]
+    date = info[2]
+    day = info[3]
+    time = info[4]
 
     frames = df_per_frame.iloc[:, 0].values 
     cars = df_per_frame.iloc[:, 3].values 
@@ -430,59 +439,6 @@ def analyze_and_plot():
     global_instance.motorbike_means.append(motorbikes_mean)
     motorbikes_median = median(motorbikes)
     motorbikes_std = stdev(motorbikes)
-
-    # Plot histogram and linechart for cars
-    plt.bar(frames, cars, width=1.0, alpha=0.7, label='Cars')
-    #plt.axhline(y=car_mean, color='r', linestyle='--', label='Mean Cars')
-    plt.axhline(y=car_median, color='b', linestyle='--', label='Median Cars')
-    plt.xlabel('Frames')
-    plt.ylabel('Number of Cars')
-    plt.title('Histogram of Cars over Frames')
-    plt.legend()
-    print(global_instance.filename + "_cars.png")
-    plt.savefig("histograms/cars/" + global_instance.filename + "_cars.png", format="png")
-    #plt.show()
-    plt.close()
-
-    # Plot histogram and linechart for buses
-    plt.bar(frames, buses, width=1.0, alpha=0.7, label='Buses')
-    #plt.axhline(y=buses_mean, color='r', linestyle='--', label='Mean Buses')
-    plt.axhline(y=buses_median, color='b', linestyle='--', label='Median Buses')
-    plt.xlabel('Frames')
-    plt.ylabel('Number of Buses')
-    plt.title('Histogram of Buses over Frames')
-    plt.legend()
-    print(global_instance.filename + "_buses.png")
-    plt.savefig("histograms/buses/" + global_instance.filename + "_buses.png", format="png")
-    #plt.show()
-    plt.close()
-
-    # Plot histogram and linechart for trucks
-    plt.bar(frames, trucks, width=1.0, alpha=0.7, label='Trucks')
-    #plt.axhline(y=trucks_mean, color='r', linestyle='--', label='Mean Trucks')
-    plt.axhline(y=trucks_median, color='b', linestyle='--', label='Median Trucks')
-    plt.xlabel('Frames')
-    plt.ylabel('Number of Trucks')
-    plt.title('Histogram of Trucks over Frames')
-    plt.legend()
-    print(global_instance.filename + "_trucks.png")
-    plt.savefig("histograms/trucks/" + global_instance.filename + "_trucks.png", format="png")
-    #plt.show()
-    plt.close()
-
-    # Data
-    categories = ['Cars', 'Buses', 'Trucks']
-    means = [car_mean, buses_mean, trucks_mean]
-    std_devs = [car_std, bus_std, truck_std]
-
-    # Plotting
-    plt.bar(categories, means, yerr=std_devs, capsize=5, color=['blue', 'orange', 'green'])
-    plt.xlabel('Vehicle Types')
-    plt.ylabel('Mean Values of number of detected vehicles')
-    plt.title('Mean Values with Standard Deviation Error Bars')
-    plt.savefig("barplots/" + global_instance.filename + "_barplot.png", format="png")
-    #plt.show()
-    plt.close()
 
     if os.path.exists(global_instance.filename + '_vehicles_ids.csv'):
         df_vehicle_ids = pd.read_csv(global_instance.filename + '_vehicles_ids.csv')
@@ -542,6 +498,7 @@ def analyze_and_plot():
 
 
 if __name__ == "__main__":
+    print("In predict.py")
     with open('overall.csv', 'a', newline='') as csvfile:
             fieldnames = ['frame', 'id', 'type']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -557,10 +514,15 @@ if __name__ == "__main__":
     for file_name in global_instance.processed_files:
         global_instance.filename = file_name
         print(f"Attempting to read file: {file_name}")
-        analyze_and_plot()
+        info = file_name.split('_')
+        print(f"Latitude: {info[0]}")
+        print(f"Longitude: {info[1]}")
+        print(f"Date: {info[2]}")
+        print(f"Time: {info[3]}")
+        analyze_and_plot(info)
     
 
-
+"""
     df = pd.read_csv('overall.csv')
     types = df.iloc[:, 2].values
 
@@ -587,4 +549,4 @@ if __name__ == "__main__":
     plt.title('Overall distribution of different vehicles in all videos')
     plt.legend()
     plt.savefig("overall.png", format="png")
-    plt.close()
+    plt.close()"""
