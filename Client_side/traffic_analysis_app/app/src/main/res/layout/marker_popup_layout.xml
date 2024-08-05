@@ -8,6 +8,7 @@
 
     <TextView
         android:id="@+id/directions"
+        android:layout_gravity="right"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Get directions to this location"
@@ -15,6 +16,7 @@
 
     <TextView
         android:id="@+id/save_location"
+        android:layout_gravity="right"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save location"

@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -72,6 +73,25 @@ public class RecordingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recording);
+
+        bottom_navigation = findViewById(R.id.bottom_navigation);
+        bottom_navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+
+                if(id == R.id.home){
+                    Intent home = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(home);
+                    finish();
+                } else if(id == R.id.info){
+                    /*Intent info = new Intent(getApplicationContext(), .class);
+                    startActivity(info);
+                    finish();*/
+                }
+                return false;
+            }
+        });
 
         Intent intent = getIntent();
         double latitude = intent.getDoubleExtra("current_location_latitude", 0);
@@ -201,15 +221,18 @@ public class RecordingActivity extends AppCompatActivity {
         double longitude = current_location.getLongitude();
 
         // Get the current date and time
-        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY_MM_dd");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+        SimpleDateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
         Date now = new Date();
 
         String date = dateFormat.format(now);
         String time = timeFormat.format(now);
+        String dayOfWeek = dayOfWeekFormat.format(now);
 
         // Format the filename
-        String filename = String.format("%s_%s-%s-%s", latitude, longitude, date, time);
+        String filename = String.format("%s_%s_%s_%s_%s", latitude, longitude, date, dayOfWeek, time);
+        filename = filename + ".mp4";
 
         Log.d("SLANJE VIDEA", filename + " iz sendtofb");
 
