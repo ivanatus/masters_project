@@ -24,6 +24,7 @@ class Globals:
     train_means = []
     bike_means = []
     motorbike_means = []
+    people_means = []
     
     @staticmethod
     def set_global_frame(frame):
