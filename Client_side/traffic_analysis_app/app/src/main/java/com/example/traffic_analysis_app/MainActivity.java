@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     EditText address;
     ImageButton search;
     GeoPoint current_location;
+    boolean directions = false;
 
 
     @Override
@@ -183,6 +184,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         // Zoom to the new location
         mapView.getController().setZoom(18); // Adjust the zoom level as needed
         mapView.getController().setCenter(currentLocation);
+
+        if(directions){
+            Log.d("Directions", "Directions true");
+            if (location.hasBearing()) {
+                Log.d("Directions", "location.hasBearing");
+                mapView.setMapOrientation(-location.getBearing());
+            }
+        }
     }
 
     public void getCoordinatesForAddress(String address) {
@@ -212,35 +221,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             @Override
             public void onFailure(Throwable t) {
                 // Handle the error
-                Toast.makeText(MainActivity.this, "Failed to get coordinates", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Failed to get coordinates: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void showPopupMenu(final Marker marker, GeoPoint markerLocation) {
-        /*View markerView = findViewById(R.id.mapView); // Use mapView as the anchor view
-        // Create the popup menu with the specified gravity
-        PopupMenu popupMenu = new PopupMenu(this, markerView, Gravity.END); // or Gravity.RIGHT
-        //PopupMenu popupMenu = new PopupMenu(this, markerView);
-        popupMenu.getMenuInflater().inflate(R.menu.marker_popup, popupMenu.getMenu());
-
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                int id = item.getItemId();
-                if (id == R.id.directions) {
-                    getDirections(current_location, markerLocation);
-                    return true;
-                } else if (id == R.id.save_location) {
-                    Toast.makeText(MainActivity.this, "Save location clicked", Toast.LENGTH_SHORT).show();
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        });
-
-        popupMenu.show();*/
         // Inflate the popup menu layout
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.marker_popup_layout, null);
@@ -295,11 +281,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Toast.makeText(this, "Invalid end location", Toast.LENGTH_SHORT).show();
             return;
         }
+        directions = true;
 
         String startCoords = start.getLongitude() + "," + start.getLatitude();
         String endCoords = end.getLongitude() + "," + end.getLatitude();
 
-        Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
+        /*Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
         call.enqueue(new Callback<RoutingResponse>() {
             @Override
             public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
@@ -308,6 +295,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     for (List<Double> point : response.body().routes.get(0).geometry.coordinates) {
                         routePoints.add(new GeoPoint(point.get(1), point.get(0)));
                     }
+                    drawRoute(routePoints);
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RoutingResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
+            }
+        });*/
+        Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
+        call.enqueue(new Callback<RoutingResponse>() {
+            @Override
+            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<GeoPoint> routePoints = new ArrayList<>();
+                    List<String> instructions = new ArrayList<>();
+
+                    for (int i = 0; i < response.body().routes.get(0).geometry.coordinates.size(); i++) {
+                        List<Double> point = response.body().routes.get(0).geometry.coordinates.get(i);
+                        routePoints.add(new GeoPoint(point.get(1), point.get(0)));
+                    }
+
                     drawRoute(routePoints);
                 } else {
                     Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();

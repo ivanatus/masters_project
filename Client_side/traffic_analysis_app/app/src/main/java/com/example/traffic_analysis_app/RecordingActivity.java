@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
@@ -163,6 +164,14 @@ public class RecordingActivity extends AppCompatActivity {
             if (videoRecordEvent instanceof VideoRecordEvent.Start) {
                 Toast.makeText(this, "RECORDING STARTED", Toast.LENGTH_SHORT).show();
                 capture_video.setEnabled(true); //start recording
+                // Stop recording after 15 seconds
+                new Handler().postDelayed(() -> {
+                    if (recording != null) {
+                        recording.stop();
+                        recording = null;
+                        capture_video.setEnabled(true); // Enable the button after recording stops
+                    }
+                }, 15000); // 15000 milliseconds = 15 seconds
             } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) { //stop recording
                 if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
                     Toast.makeText(this, "RECORDING STOPPED", Toast.LENGTH_SHORT).show();

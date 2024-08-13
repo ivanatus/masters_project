@@ -40,7 +40,7 @@ from firebase_admin import credentials
 cred = credentials.Certificate("serviceAccountKey.json")
 #firebase_admin.initialize_app(cred)
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'gs://mastersproject-634d8.appspot.com/Videos',
+    'databaseURL': 'https://mastersproject-634d8-default-rtdb.europe-west1.firebasedatabase.app/',
     'storageBucket': 'mastersproject-634d8.appspot.com'
 })
 from firebase_admin import storage
@@ -693,6 +693,38 @@ def analyze_and_send(info):
     print(destination_file_path)
     upload_file = bucket.blob(destination_file_path)
     upload_file.upload_from_filename(overall_dets)
+
+    latitude_str = str(latitude).replace(".", "_")
+    longitude_str = str(longitude).replace(".", "_")
+
+    # Replace colons with underscores in the interval
+    interval = interval.replace(":", "_")
+
+    db_path = f"{latitude_str}-{longitude_str}/{day}/{interval}"
+
+    # Read descriptive_stats.csv and upload to Realtime Database
+    descriptive_data = {
+    'mean_car': float(car_mean),
+    'med_car': float(car_median),
+    'std_car': float(car_std),
+    'cars_overall': int(cars_overall),
+    'mean_bus': float(buses_mean),
+    'med_bus': float(buses_median),
+    'std_bus': float(bus_std),
+    'bus_overall': int(buses_overall),
+    'mean_truck': float(trucks_mean),
+    'med_truck': float(trucks_median),
+    'std_truck': float(truck_std),
+    'truck_overall': int(trucks_overall),
+    'mean_ppl': float(people_mean),
+    'med_ppl': float(people_median),
+    'std_ppl': float(people_std),
+    'ppl_overall': int(people_overall),
+}
+
+    # Reference and set data in Realtime Database
+    ref = db.reference(db_path)
+    ref.set(descriptive_data)
 
     if os.path.exists(current_results):
         os.remove(current_results)
