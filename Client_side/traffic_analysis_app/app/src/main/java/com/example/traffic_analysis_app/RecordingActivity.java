@@ -5,6 +5,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -31,9 +32,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -49,13 +53,14 @@ import com.google.firebase.storage.UploadTask;
 
 import org.osmdroid.util.GeoPoint;
 
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-public class RecordingActivity extends AppCompatActivity {
+public class RecordingActivity extends AppCompatActivity implements VideoTransferFragment.OnVideoTransferListener  {
 
-    Button capture_video;
+    ImageButton capture_video;
     Recording recording = null;
     VideoCapture<Recorder> video_capture = null;
     PreviewView preview_view;
@@ -69,6 +74,22 @@ public class RecordingActivity extends AppCompatActivity {
         }
     });
     GeoPoint current_location;
+    private VideoTransferFragment videoTransferFragment = VideoTransferFragment.newInstance();
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return false;
+    }
+
+    private void removeOverflowMenu(Menu menu) {
+        try {
+            Field field = MenuBuilder.class.getDeclaredField("mOptionalIconsVisible");
+            field.setAccessible(true);
+            field.set(menu, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +97,13 @@ public class RecordingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recording);
 
         bottom_navigation = findViewById(R.id.bottom_navigation);
+        // Clear any selected item
+        bottom_navigation.setOnNavigationItemSelectedListener(null);
+        bottom_navigation.getMenu().setGroupCheckable(0, true, false);
+        for (int i = 0; i < bottom_navigation.getMenu().size(); i++) {
+            bottom_navigation.getMenu().getItem(i).setChecked(false);
+        }
+        bottom_navigation.getMenu().setGroupCheckable(0, true, true);
         bottom_navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -86,9 +114,9 @@ public class RecordingActivity extends AppCompatActivity {
                     startActivity(home);
                     finish();
                 } else if(id == R.id.info){
-                    /*Intent info = new Intent(getApplicationContext(), .class);
+                    Intent info = new Intent(getApplicationContext(), InfoActivity.class);
                     startActivity(info);
-                    finish();*/
+                    finish();
                 }
                 return false;
             }
@@ -134,7 +162,7 @@ public class RecordingActivity extends AppCompatActivity {
 
     //method to handle capturing video recording
     private void captureVideo() {
-        //capture_video.setImageResource(R.drawable.baseline_stop_24); //change buttom image
+        capture_video.setImageResource(R.drawable.camera_pause); //change button image
         Recording recording1 = recording;
         Log.d("Delete video", "captureVideo recording = " + String.valueOf(recording1));
         if (recording1 != null) { //stop the recording
@@ -178,6 +206,7 @@ public class RecordingActivity extends AppCompatActivity {
                     //String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
                     Uri videoUri = ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
                     sendToFirebase(videoUri);
+                    showVideoTransferFragment();
                     //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 } else { //error while stopping the video
                     if(recording != null) {
@@ -187,7 +216,7 @@ public class RecordingActivity extends AppCompatActivity {
                     String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 }
-                //capture_video.setImageResource(R.drawable.baseline_fiber_manual_record_24); //change button image
+                capture_video.setImageResource(R.drawable.camera_record); //change button image
             }
         });
     }
@@ -251,19 +280,32 @@ public class RecordingActivity extends AppCompatActivity {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) { //the video is successfully sent to Firebase and deleted from the device
                 Toast.makeText(RecordingActivity.this, "Video poslan u bazu.", Toast.LENGTH_SHORT).show();
                 //deleteVideoFromDevice(uri);
-                DatabaseReference database_reference = FirebaseDatabase.getInstance().getReference();
-                database_reference.child("Unanalyzed").setValue(true);
+                videoTransferFragment.updateProgressText("Snimka uspješno poslana na obradu!");
             }
         }).addOnFailureListener(new OnFailureListener() { //the video failed to upload to the Firebase
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(RecordingActivity.this, "Došlo je do greške: "+ e.getMessage(), Toast.LENGTH_SHORT).show();
+                videoTransferFragment.updateProgressText("Nema pristupa internetu, snimka će biti automatski poslana kada veza bude uspostavljena.");
             }
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() { //show progress of uploading the video to the database
             @Override
             public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                videoTransferFragment.updateProgressText("Snimka se obrađuje, molim pričekajte...");
                 Toast.makeText(RecordingActivity.this, "Progress: " + Math.toIntExact(snapshot.getBytesTransferred()) + "/" + Math.toIntExact(snapshot.getTotalByteCount()), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showVideoTransferFragment() {
+        videoTransferFragment.show(getSupportFragmentManager(), "VideoTransferFragment");
+    }
+
+
+    @Override
+    public void onVideoTransferProgress(String progress) {
+        if (videoTransferFragment != null) {
+            videoTransferFragment.updateProgressText(progress);
+        }
     }
 }

@@ -25,6 +25,11 @@
         android:theme="@style/Theme.Traffic_analysis_app"
         tools:targetApi="31">
         <activity
+            android:name=".InfoActivity"
+            android:exported="false"
+            android:label="@string/title_activity_info"
+            android:theme="@style/Theme.Traffic_analysis_app" />
+        <activity
             android:name=".RecordingActivity"
             android:exported="false" />
         <activity

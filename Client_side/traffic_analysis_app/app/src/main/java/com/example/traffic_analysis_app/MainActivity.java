@@ -3,6 +3,7 @@ package com.example.traffic_analysis_app;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,6 +23,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -40,6 +43,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +53,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     MapView mapView;
@@ -63,6 +70,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     GeoPoint current_location;
     boolean directions = false;
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return false;
+    }
+
+    private void removeOverflowMenu(Menu menu) {
+        try {
+            Field field = MenuBuilder.class.getDeclaredField("mOptionalIconsVisible");
+            field.setAccessible(true);
+            field.set(menu, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +91,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         setContentView(R.layout.activity_main);
 
         bottom_navigation = findViewById(R.id.bottom_navigation);
+        // Clear any selected item
+        bottom_navigation.setOnNavigationItemSelectedListener(null);
+        bottom_navigation.getMenu().setGroupCheckable(0, true, false);
+        for (int i = 0; i < bottom_navigation.getMenu().size(); i++) {
+            bottom_navigation.getMenu().getItem(i).setChecked(false);
+        }
+        bottom_navigation.getMenu().setGroupCheckable(0, true, true);
         bottom_navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -82,9 +110,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     startActivity(recording);
                     finish();
                 } else if(id == R.id.info){
-                    /*Intent info = new Intent(getApplicationContext(), .class);
+                    Log.d("ANOVASTATS", "ID recognized");
+                    Intent info = new Intent(getApplicationContext(), InfoActivity.class);
                     startActivity(info);
-                    finish();*/
+                    finish();
                 }
                 return false;
             }
@@ -306,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
             }
         });*/
-        Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
+        /*Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
         call.enqueue(new Callback<RoutingResponse>() {
             @Override
             public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
@@ -329,13 +358,65 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             public void onFailure(Call<RoutingResponse> call, Throwable t) {
                 Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
             }
+        });*/
+
+        // If the interface expects alternatives as a String
+        Call<RoutingResponse> call = routingService.getRoute(
+                startCoords,
+                endCoords,
+                "full",      // Example value for overview, adjust as needed
+                "geojson"    // Example value for geometries, adjust as needed
+        );
+
+        call.enqueue(new Callback<RoutingResponse>() {
+            @Override
+            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<List<GeoPoint>> allRoutes = new ArrayList<>();
+
+                    // Assuming the response includes multiple routes
+                    for (RoutingResponse.Route route : response.body().routes) {
+                        List<GeoPoint> routePoints = new ArrayList<>();
+                        for (List<Double> point : route.geometry.coordinates) {
+                            routePoints.add(new GeoPoint(point.get(1), point.get(0)));
+                        }
+                        allRoutes.add(routePoints);
+                    }
+
+                    drawRoute(allRoutes);
+                } else {
+                    Log.d("GPS_ROUTES", "IN here");
+                    Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RoutingResponse> call, Throwable t) {
+                Log.d("GPS_ROUTES", t.getMessage());
+                Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+                Log.d("GPS_ROUTES", t.getMessage());
+            }
         });
     }
 
-    private void drawRoute(List<GeoPoint> routePoints) {
+    private void drawRoute(List<List<GeoPoint>> allRoutes) {//List<GeoPoint> routePoints) {
+        /*
         Polyline routeLine = new Polyline();
         routeLine.setPoints(routePoints);
         mapView.getOverlays().add(routeLine);
+        mapView.invalidate();
+        mapView.getController().setZoom(15);*/
+        // Clear previous routes
+        mapView.getOverlays().clear();
+        mapView.invalidate();
+
+        for (List<GeoPoint> routePoints : allRoutes) {
+            Polyline routeLine = new Polyline();
+            routeLine.setPoints(routePoints);
+            routeLine.setColor(Color.BLUE); // Set a color for the route
+            routeLine.setWidth(5); // Set the width of the route line
+            mapView.getOverlays().add(routeLine);
+        }
         mapView.invalidate();
         mapView.getController().setZoom(15);
     }

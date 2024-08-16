@@ -13,25 +13,28 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             app:menu="@menu/toolbar"
-            android:background="@color/white"
-            app:title=""/>
+            android:background="@color/lightblue"
+            app:title="Analiza prometa"
+            app:titleTextColor="@color/white"/>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="10dp"
-            android:background="@color/white">
+            android:backgroundTint="@color/offwhite">
             <EditText
                 android:id="@+id/address_search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:backgroundTint="@color/offwhite"
                 android:hint="Where to?"/>
             <ImageButton
                 android:id="@+id/search_address"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/offwhite"
                 android:src="@drawable/baseline_search_24"
                 android:layout_gravity="right"/>
 
@@ -47,6 +50,8 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_gravity="bottom"
+            android:background="@color/blue"
+            app:itemIconTint="@color/white"
             app:menu="@menu/bottom_navigation"/>
     </LinearLayout>
 </RelativeLayout>

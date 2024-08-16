@@ -3,20 +3,23 @@
 
     <item
         android:id="@+id/home"
-        android:title="Home"
+        android:title=""
+        android:icon="@drawable/navigation_navbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="false"
         />
     <item
         android:id="@+id/recording"
-        android:title="Camera"
+        android:title=""
+        android:icon="@drawable/camera_navbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
     <item
         android:id="@+id/info"
-        android:title="Info"
+        android:title=""
+        android:icon="@drawable/info_navbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />

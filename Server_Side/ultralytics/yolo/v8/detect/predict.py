@@ -33,6 +33,7 @@ import csv
 from globals import Globals
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import shapiro
 
 #Firebase setup
 import firebase_admin
@@ -407,147 +408,6 @@ def predict(cfg):
 Function that is called at the very end of execution. Analyses and plots collected data.
 TO DO
 """
-"""
-def analyze_and_send(info):
-    if os.path.exists(global_instance.filename + '_per_frame.csv'):
-        df_per_frame = pd.read_csv(global_instance.filename + '_per_frame.csv')
-    else:
-        df_per_frame = pd.read_csv('_per_frame.csv')
-
-    latitude = info[0]
-    longitude = info[1]
-    date = info[2]
-    day = info[3]
-    time = info[4]
-
-    frames = df_per_frame.iloc[:, 0].values 
-    people = df_per_frame.iloc[:, 2].values
-    cars = df_per_frame.iloc[:, 3].values 
-    buses = df_per_frame.iloc[:, 2].values 
-    trucks = df_per_frame.iloc[:, 4].values
-    bikes = df_per_frame.iloc[:, 5].values
-    trains = df_per_frame.iloc[:, 6].values
-    motorbikes = df_per_frame.iloc[:, 7].values  
-
-    print(cars)
-    car_mean = mean(cars)
-    global_instance.car_means.append(car_mean)
-    car_median = median(cars)
-    car_std = stdev(cars)
-    buses_mean = mean(buses)
-    global_instance.bus_means.append(buses_mean)
-    buses_median = median(buses)
-    bus_std = stdev(buses)
-    trucks_mean = mean(trucks)
-    global_instance.truck_means.append(trucks_mean)
-    trucks_median = median(trucks)
-    truck_std = stdev(trucks)
-    train_mean = mean(trains)
-    global_instance.train_means.append(train_mean)
-    train_median = median(trains)
-    train_std = stdev(trains)
-    bikes_mean = mean(bikes)
-    global_instance.bike_means.append(bikes_mean)
-    bikes_median = median(bikes)
-    bikes_std = stdev(bikes)
-    motorbikes_mean = mean(motorbikes)
-    global_instance.motorbike_means.append(motorbikes_mean)
-    motorbikes_median = median(motorbikes)
-    motorbikes_std = stdev(motorbikes)
-    people_mean = mean(people)
-    global_instance.people_means.append(people_mean)
-    people_median = median(people)
-    people_std = stdev(people)
-
-    if os.path.exists(global_instance.filename + '_vehicles_ids.csv'):
-        df_vehicle_ids = pd.read_csv(global_instance.filename + '_vehicles_ids.csv')
-    else:
-        df_vehicle_ids = pd.read_csv('_vehicles_ids.csv')
-
-    #types_of_vehicles = df_vehicle_ids["Type"].values
-    types_of_vehicles = df_vehicle_ids.iloc[:, 2].values 
-    cars_overall = 0
-    trucks_overall = 0
-    buses_overall = 0
-    trains_overall = 0
-    bikes_overall = 0
-    motorbikes_overall = 0
-    people_overall = 0
-
-    for type in types_of_vehicles:
-        if type == 'car':
-            cars_overall += 1
-        elif type == 'truck':
-            trucks_overall += 1
-        elif type == 'bus':
-            buses_overall += 1
-        elif type == 'motorbike':
-            motorbikes_overall += 1
-        elif type == 'train':
-            trains_overall += 1
-        elif type == 'bike':
-            bikes_overall += 1
-        elif type == 'person':
-            people_overall += 1
-
-    with open('descriptive_stats.csv', 'a', newline='') as csvfile:
-            fieldnames = ['mean_car', 'med_car', 'std_car', 'cars_overall', 'mean_bus', 'med_bus', 'std_bus', 'bus_overall', 'mean_truck', 'med_truck', 'std_truck', 'truck_overall', 'mean_ppl', 'med_ppl', 'std_ppl', 'ppl_overall']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow({'mean_car': car_mean, 'med_car': car_median, 'std_car': car_std, 'cars_overall': cars_overall, 'mean_bus': buses_mean, 'med_bus': buses_median, 'std_bus': bus_std, 'bus_overall': buses_overall, 'mean_truck': trucks_mean, 'med_truck': trucks_median, 'std_truck': truck_std, 'truck_overall': trucks_overall, 'mean_ppl': people_mean, 'med_ppl': people_median, 'std_ppl': people_std, 'ppl_overall': people_overall})
-
-    # Plot pie chart of distribution of vehicles
-    labels = ['Cars', 'Trucks', 'Buses', 'Trains', 'Bikes', 'Motorbikes', 'People']
-    sizes = [cars_overall, trucks_overall, buses_overall, trains_overall, bikes_overall, motorbikes_overall, people_overall]
-    colors = ['red','orange', 'yellow', 'green', 'blue', 'purple', 'brown']
-    explode = (0.1, 0, 0)
-    plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
-    plt.axis('equal')
-    plt.title('Overall distribution of different vehicles in the video')
-    plt.legend()
-    plt.savefig("overall/" + global_instance.filename + "_overall.png", format="png")
-    #plt.show()
-    plt.close()
-    
-    #SEND TO FIREBASE
-    bucket = storage.bucket() #reference to Firebase Storage
-    current_results = "descriptive_stats.csv" #path to file that is going to be sent to Storage
-
-    latitude = latitude.split('.')
-    longitude = longitude.split('.')
-    time = time.split(':')
-    interval = ""
-    if time[1] < 30:
-        interval = time[0] + ":00-" + time[0] + ":30"
-        print(f"Interval: {interval}")
-    else:
-        interval = time[0] + ":30-"
-        time[0] += 1
-        interval = interval + time[0] + ":00"
-        print(f"Interval: {interval}")
-
-    destination_file_path = "Descriptive_stats_days/" + day + "/" + latitude[0] + "_" + longitude[0] + "/" + interval + ".csv"
-    print(destination_file_path)
-    upload_file = bucket.blob(destination_file_path)
-
-    if os.path.exists(current_results):
-        os.remove(current_results)
-    else:
-        print(f"{current_results} does not exist in the current directory.")
-
-
-    if os.path.exists(global_instance.filename + '_per_frame.csv'):
-        os.remove(global_instance.filename + "_per_frame.csv")
-    else:
-        os.remove("_per_frame.csv")
-
-    if os.path.exists(global_instance.filename + '_vehicles_ids.csv'):
-        os.remove(global_instance.filename + "_vehicles_ids.csv")
-    else:
-        os.remove("_vehicles_ids.csv")
-
-
-"""
-
 def analyze_and_send(info):
     if os.path.exists(global_instance.filename + '_vehicles_ids.csv'):
         df_vehicle_ids = pd.read_csv(global_instance.filename + '_vehicles_ids.csv')
@@ -672,22 +532,19 @@ def analyze_and_send(info):
         people_median = median(people)
         people_std = stdev(people)
 
-        with open('descriptive_stats.csv', 'a', newline='') as csvfile:
-            fieldnames = ['mean_car', 'med_car', 'std_car', 'cars_overall', 'mean_bus', 'med_bus', 'std_bus', 'bus_overall', 'mean_truck', 'med_truck', 'std_truck', 'truck_overall', 'mean_ppl', 'med_ppl', 'std_ppl', 'ppl_overall']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow({'mean_car': car_mean, 'med_car': car_median, 'std_car': car_std, 'cars_overall': cars_overall, 'mean_bus': buses_mean, 'med_bus': buses_median, 'std_bus': bus_std, 'bus_overall': buses_overall, 'mean_truck': trucks_mean, 'med_truck': trucks_median, 'std_truck': truck_std, 'truck_overall': trucks_overall, 'mean_ppl': people_mean, 'med_ppl': people_median, 'std_ppl': people_std, 'ppl_overall': people_overall})
+        car_stats, car_p_value = shapiro(cars)
+        bus_stats, bus_p_value = shapiro(buses)
+        truck_stats, truck_p_value = shapiro(trucks)
+        train_stats, train_p_value = shapiro(trains)
+        people_stats, people_p_value = shapiro(people)
+        motorbikes_stats, motorbikes_p_value = shapiro(motorbikes)
+        bikes_stats, bikes_p_value = shapiro(bikes)
 
-    current_results = "descriptive_stats.csv" #path to file that is going to be sent to Storage
     overall_dets = ""
     if found:
         overall_dets = "old_overall.csv"
     else:
         overall_dets = "new_overall.csv"
-
-    destination_file_path = "Descriptive_stats_days/" + day + "/" + f"{latitude}_{longitude}/" + interval + ".csv"
-    print(destination_file_path)
-    upload_file = bucket.blob(destination_file_path)
-    upload_file.upload_from_filename(current_results)
 
     destination_file_path = "Overall_detections_days/" + day + "/" + f"{latitude}_{longitude}/" + interval + ".csv"
     print(destination_file_path)
@@ -702,34 +559,42 @@ def analyze_and_send(info):
 
     db_path = f"{latitude_str}-{longitude_str}/{day}/{interval}"
 
+
     # Read descriptive_stats.csv and upload to Realtime Database
     descriptive_data = {
     'mean_car': float(car_mean),
     'med_car': float(car_median),
     'std_car': float(car_std),
-    'cars_overall': int(cars_overall),
+    'cars_shapiro': float(car_p_value),
     'mean_bus': float(buses_mean),
     'med_bus': float(buses_median),
     'std_bus': float(bus_std),
-    'bus_overall': int(buses_overall),
+    'bus_shapiro': float(bus_p_value),
     'mean_truck': float(trucks_mean),
     'med_truck': float(trucks_median),
     'std_truck': float(truck_std),
-    'truck_overall': int(trucks_overall),
+    'truck_shapiro': float(truck_p_value),
     'mean_ppl': float(people_mean),
     'med_ppl': float(people_median),
     'std_ppl': float(people_std),
-    'ppl_overall': int(people_overall),
+    'ppl_shapiro': float(people_p_value),
+    'mean_train': float(train_mean),
+    'med_train': float(train_median),
+    'std_train': float(train_std),
+    'ppl_train': float(train_p_value),
+    'mean_bike': float(bikes_mean),
+    'med_bike': float(bikes_median),
+    'std_bike': float(bikes_std),
+    'bike_shapiro': float(bikes_p_value),
+    'mean_motor': float(motorbikes_mean),
+    'med_motor': float(motorbikes_median),
+    'std_motor': float(motorbikes_std),
+    'ppl_motor': float(motorbikes_p_value)
 }
 
     # Reference and set data in Realtime Database
     ref = db.reference(db_path)
     ref.set(descriptive_data)
-
-    if os.path.exists(current_results):
-        os.remove(current_results)
-    else:
-        print(f"{current_results} does not exist in the current directory.")
 
     if os.path.exists(overall_dets):
         os.remove(overall_dets)
@@ -746,6 +611,11 @@ def analyze_and_send(info):
         os.remove(global_instance.filename + "_vehicles_ids.csv")
     else:
         os.remove("_vehicles_ids.csv")
+
+    if os.path.exists('overall.csv'):
+        os.remove("overall.csv")
+    else:
+        os.remove("overall.csv")
 
 if __name__ == "__main__":
     print("In predict.py")
