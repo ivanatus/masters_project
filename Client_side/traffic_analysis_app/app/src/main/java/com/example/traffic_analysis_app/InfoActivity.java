@@ -26,6 +26,7 @@ import java.util.List;
 public class InfoActivity extends AppCompatActivity {
 
     BottomNavigationView bottom_navigation;
+    boolean showToolbarMenu = false;
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -41,10 +42,50 @@ public class InfoActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+    //adding the navigation bar to the layout
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar, menu);
+
+        if (!showToolbarMenu)
+            return false;
+        getMenuInflater().inflate(R.menu.bottom_navigation, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    //defining the action that is done after navigation bar/toolbar item selection
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.recording) {
+            Intent recording = new Intent(getApplicationContext(), RecordingActivity.class);
+            startActivity(recording);
+            finish();
+        } else if(id == R.id.info) {
+            //userInstructions(this);
+            Intent data = new Intent(getApplicationContext(), InfoActivity.class);
+            startActivity(data);
+            finish();
+        } else if(id == R.id.settings){
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(intent);
+            finish();
+        } else if(id == R.id.home){
+            Intent home = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(home);
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         bottom_navigation = findViewById(R.id.bottom_navigation);
         // Clear any selected item

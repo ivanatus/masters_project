@@ -16,6 +16,7 @@
             android:layout_height="60dp"
             app:menu="@menu/toolbar"
             android:background="@color/lightblue"
+            app:itemIconTint="@color/white"
             app:title="Analiza prometa"
             app:titleTextColor="@color/white"/>
 
@@ -39,16 +40,30 @@
                 android:layout_gravity="right"/>
 
         </androidx.cardview.widget.CardView>
-        <org.osmdroid.views.MapView
-            android:id="@+id/mapView"
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/mapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <FrameLayout
+                android:id="@+id/fragmentContainer"
+                android:layout_gravity="center"
+                android:layout_width="330dp"
+                android:layout_height="400dp"
+                android:visibility="gone"/>
+
+        </FrameLayout>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="50dp"
             android:layout_gravity="bottom"
             android:background="@color/blue"
             app:itemIconTint="@color/white"

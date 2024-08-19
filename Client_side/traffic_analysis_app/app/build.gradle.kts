@@ -37,8 +37,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("com.google.firebase:firebase-storage:21.0.0")
-    implementation("com.google.firebase:firebase-database:21.0.0")
     implementation("androidx.annotation:annotation-jvm:1.8.1")
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
@@ -63,8 +61,17 @@ dependencies {
     //firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-storage:21.0.0")
+    implementation("com.google.firebase:firebase-database:21.0.0")
 
     //statistics
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation("com.github.haifengl:smile-core:2.5.3")
+
+    //notifications
+    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    //graphs
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

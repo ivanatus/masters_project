@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -57,6 +60,17 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.BarLineScatterCandleBubbleDataSet;
+import com.github.mikephil.charting.data.BarLineScatterCandleBubbleData;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+
 public class MainActivity extends AppCompatActivity implements LocationListener {
     MapView mapView;
     private static final int REQUEST_LOCATION_PERMISSION = 1; // Define your request code here
@@ -69,11 +83,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     ImageButton search;
     GeoPoint current_location;
     boolean directions = false;
+    boolean showToolbarMenu = false;
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        return false;
-    }
+    public boolean onPrepareOptionsMenu(Menu menu) { return true; }
 
     private void removeOverflowMenu(Menu menu) {
         try {
@@ -85,10 +98,50 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
+    //adding the navigation bar to the layout
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar, menu);
+
+        if (!showToolbarMenu)
+            return false;
+        getMenuInflater().inflate(R.menu.bottom_navigation, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    //defining the action that is done after navigation bar/toolbar item selection
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.recording) {
+            Intent recording = new Intent(getApplicationContext(), RecordingActivity.class);
+            startActivity(recording);
+            finish();
+        } else if(id == R.id.info) {
+            //userInstructions(this);
+            Intent data = new Intent(getApplicationContext(), InfoActivity.class);
+            startActivity(data);
+            finish();
+        } else if(id == R.id.settings){
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(intent);
+            finish();
+        } else if(id == R.id.home){
+            Intent home = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(home);
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         bottom_navigation = findViewById(R.id.bottom_navigation);
         // Clear any selected item
@@ -161,6 +214,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         });
 
         showMarkersFromSharedPreferences();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        ChartFragment chartFragment = ChartFragment.newInstance(4.5f, 0.7f, 2.3f, 0.2f,13f, 3.6f, 1.5f, 0.9f,5.3f, 2.7f, 0.8f, 1f,2.3f, 1.8f);
+
+        fragmentTransaction.replace(R.id.fragmentContainer, chartFragment);
+        fragmentTransaction.commit();
+
+        //graphPlotting(this, 4.5f, 0.7f, 2.3f, 0.2f,13f, 3.6f, 1.5f, 0.9f,5.3f, 2.7f, 0.8f, 1f,2.3f, 1.8f);
     }
 
     private void startLocationUpdates() {
@@ -315,6 +378,45 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         String startCoords = start.getLongitude() + "," + start.getLatitude();
         String endCoords = end.getLongitude() + "," + end.getLatitude();
 
+        Call<RoutingResponse> call = routingService.getRoute(
+                startCoords,
+                endCoords,
+                "full",      // Example value for overview, adjust as needed
+                "geojson",   // Example value for geometries, adjust as needed
+                true         // Request alternatives to get multiple routes
+        );
+
+        call.enqueue(new Callback<RoutingResponse>() {
+            @Override
+            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<List<GeoPoint>> allRoutes = new ArrayList<>();
+
+                    // Assuming the response includes multiple routes
+                    for (RoutingResponse.Route route : response.body().routes) {
+                        List<GeoPoint> routePoints = new ArrayList<>();
+                        for (List<Double> point : route.geometry.coordinates) {
+                            routePoints.add(new GeoPoint(point.get(1), point.get(0)));
+                        }
+                        allRoutes.add(routePoints);
+                    }
+
+                    drawRoute(allRoutes);
+                } else {
+                    Log.d("GPS_ROUTES", "Failed to get routes");
+                    Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RoutingResponse> call, Throwable t) {
+                Log.d("GPS_ROUTES", t.getMessage());
+                Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
         /*Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
         call.enqueue(new Callback<RoutingResponse>() {
             @Override
@@ -361,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         });*/
 
         // If the interface expects alternatives as a String
-        Call<RoutingResponse> call = routingService.getRoute(
+        /*Call<RoutingResponse> call = routingService.getRoute(
                 startCoords,
                 endCoords,
                 "full",      // Example value for overview, adjust as needed
@@ -396,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
                 Log.d("GPS_ROUTES", t.getMessage());
             }
-        });
+        });*/
     }
 
     private void drawRoute(List<List<GeoPoint>> allRoutes) {//List<GeoPoint> routePoints) {
@@ -505,6 +607,162 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 break;
         }
         return ContextCompat.getDrawable(this, markerResource);
+    }
+
+    /*public static void graphPlotting(Context context, float bike_mean, float bike_std, float bus_mean, float bus_std,
+                                     float car_mean, float car_std, float motor_mean, float motor_std,
+                                     float people_mean, float people_std, float train_mean, float train_std,
+                                     float truck_mean, float truck_std) {
+
+        // Create a list of means and standard deviations
+        float[] means = {bike_mean, bus_mean, car_mean, motor_mean, people_mean, train_mean, truck_mean};
+        float[] stdDevs = {bike_std, bus_std, car_std, motor_std, people_std, train_std, truck_std};
+        String[] labels = {"Bike", "Bus", "Car", "Motor", "People", "Train", "Truck"};
+
+        // Initialize bar entries and error bars
+        ArrayList<BarEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < means.length; i++) {
+            entries.add(new BarEntry(i, means[i], stdDevs[i])); // x index, mean, std deviation
+        }
+
+        BarDataSet barDataSet = new BarDataSet(entries, "Transport Means");
+        barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+        barDataSet.setDrawValues(true);
+
+        BarData barData = new BarData(barDataSet);
+
+        // Create a BarChart
+        BarChart barChart = new BarChart(context);
+        barChart.setData(barData);
+        barChart.getDescription().setEnabled(false);
+
+        // Customize the x-axis
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setGranularity(1f);
+        xAxis.setCenterAxisLabels(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        //xAxis.setValueFormatter((value, axis) -> labels[(int) value]);
+        //xAxis.setValueFormatter((value, axis) -> labels[(int) Math.round(value)]);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+
+        // Customize the y-axis
+        YAxis leftAxis = barChart.getAxisLeft();
+        leftAxis.setAxisMinimum(0f);
+        YAxis rightAxis = barChart.getAxisRight();
+        rightAxis.setEnabled(false);
+
+        barChart.setFitBars(true); // make the x-axis fit exactly all bars
+        barChart.invalidate(); // refresh
+
+        // Inflate the custom layout for the dialog
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_chart, null);
+
+        // Add the chart to the custom layout
+        ((LinearLayout) dialogView.findViewById(R.id.chartContainer)).addView(barChart);
+
+        // Create and show the AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(dialogView);
+
+        final AlertDialog dialog = builder.create();
+
+        // Set the click listener for the OK button
+        Button okButton = dialogView.findViewById(R.id.okButton);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }*/
+
+    public static void graphPlotting(Context context, float bike_mean, float bike_std, float bus_mean, float bus_std,
+                                     float car_mean, float car_std, float motor_mean, float motor_std,
+                                     float people_mean, float people_std, float train_mean, float train_std,
+                                     float truck_mean, float truck_std) {
+
+        // Create a list of means and standard deviations
+        float[] means = {bike_mean, bus_mean, car_mean, motor_mean, people_mean, train_mean, truck_mean};
+        float[] stdDevs = {bike_std, bus_std, car_std, motor_std, people_std, train_std, truck_std};
+        String[] labels = {"Bike", "Bus", "Car", "Motor", "People", "Train", "Truck"};
+
+        // Initialize bar entries and error bars
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
+
+        for (int i = 0; i < means.length; i++) {
+            entries.add(new BarEntry(i, means[i], stdDevs[i])); // x index, mean, std deviation
+            colors.add(getColorForValue(means[i])); // Use a method to determine the color based on value
+        }
+
+        // Create a BarDataSet from the entries
+        BarDataSet barDataSet = new BarDataSet(entries, "Transport Means");
+        barDataSet.setColors(colors); // Set colors for each bar
+        barDataSet.setDrawValues(true); // Show values on top of bars
+
+        BarData barData = new BarData(barDataSet);
+
+        // Create a BarChart
+        BarChart barChart = new BarChart(context);
+        barChart.setData(barData);
+        barChart.getDescription().setEnabled(false);
+
+        // Customize the x-axis
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels)); // Use labels as the x-axis labels
+        xAxis.setDrawGridLines(false); // Disable grid lines on the x-axis
+        xAxis.setGranularity(1f); // Ensure the x-axis labels correspond to each bar
+        xAxis.setCenterAxisLabels(false);
+
+        // Customize the y-axis
+        YAxis leftAxis = barChart.getAxisLeft();
+        leftAxis.setAxisMinimum(0f); // Start y-axis from 0
+        YAxis rightAxis = barChart.getAxisRight();
+        rightAxis.setEnabled(false); // Disable the right y-axis
+
+        // Customize the chart appearance
+        barChart.setFitBars(true); // Make the x-axis fit exactly all bars
+        barChart.invalidate(); // Refresh the chart
+
+        // Inflate the custom layout for the dialog
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_chart, null);
+
+        // Add the chart to the custom layout
+        ((LinearLayout) dialogView.findViewById(R.id.chartContainer)).addView(barChart);
+
+        // Create and show the AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(dialogView);
+
+        final AlertDialog dialog = builder.create();
+
+        // Set the click listener for the OK button
+        Button okButton = dialogView.findViewById(R.id.okButton);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    // Helper method to get color based on value (adjust logic as needed)
+    private static int getColorForValue(float value) {
+        if (value < 10) {
+            return ColorTemplate.COLORFUL_COLORS[0]; // Example color for low values
+        } else if (value < 20) {
+            return ColorTemplate.COLORFUL_COLORS[1]; // Example color for medium values
+        } else {
+            return ColorTemplate.COLORFUL_COLORS[2]; // Example color for high values
+        }
     }
 
 }
