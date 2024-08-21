@@ -28,13 +28,13 @@
             android:id="@+id/editTextTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Reminder Title" />
+            android:hint="Naslov podsjetnika" />
 
         <EditText
             android:id="@+id/editTextDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Reminder Description" />
+            android:hint="Opis podsjetnika" />
 
         <TimePicker
             android:id="@+id/timePicker"
@@ -46,7 +46,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select Days"
+            android:text="Odaberite dane"
             android:layout_marginTop="16dp"
             android:layout_marginLeft="30dp"/>
 
@@ -64,25 +64,25 @@
                     android:id="@+id/checkBoxMonday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Monday" />
+                    android:text="Ponedjeljak" />
 
                 <CheckBox
                     android:id="@+id/checkBoxTuesday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tuesday" />
+                    android:text="Utorak" />
 
                 <CheckBox
                     android:id="@+id/checkBoxWednesday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wednesday" />
+                    android:text="Srijeda" />
 
                 <CheckBox
                     android:id="@+id/checkBoxThursday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thursday" />
+                    android:text="Četvrtak" />
                     </LinearLayout>
 
             <LinearLayout
@@ -93,19 +93,19 @@
                     android:id="@+id/checkBoxFriday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Friday" />
+                    android:text="Petak" />
 
                 <CheckBox
                     android:id="@+id/checkBoxSaturday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Saturday" />
+                    android:text="Subota" />
 
                 <CheckBox
                     android:id="@+id/checkBoxSunday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sunday" />
+                    android:text="Nedjelja" />
             </LinearLayout>
         </LinearLayout>
 
@@ -117,7 +117,7 @@
                 android:id="@+id/buttonSetReminder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Set Reminder"
+                android:text="Postavi podsjetnik"
                 android:layout_marginRight="2dp"
                 android:backgroundTint="@color/lightblue"
                 android:layout_marginTop="16dp" />
@@ -126,6 +126,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delete Reminder"
+                android:visibility="gone"
                 android:layout_marginLeft="2dp"
                 android:backgroundTint="@color/lightblue"
                 android:layout_marginTop="16dp" />

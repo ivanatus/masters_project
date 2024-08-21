@@ -20,6 +20,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -40,9 +42,11 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
@@ -177,6 +181,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setMultiTouchControls(true);
+
+        // Add a long-click listener to the map to capture long clicks
+        addLongClickListenerToMap();
+
         // Initialize the Nominatim service
         nominatimService = new NominatimService();
         address = findViewById(R.id.address_search);
@@ -286,6 +294,57 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
+    private void addLongClickListenerToMap() {
+        MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
+            @Override
+            public boolean singleTapConfirmedHelper(GeoPoint p) {
+                // Do nothing on single tap
+                return false;
+            }
+
+            @Override
+            public boolean longPressHelper(GeoPoint p) {
+                // This is where the long-press logic goes
+                addMarkerAtLocation(p);
+                return true;
+            }
+        };
+
+        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(getApplicationContext(), mapEventsReceiver);
+        mapView.getOverlays().add(mapEventsOverlay);
+    }
+
+    private void addMarkerAtLocation(GeoPoint geoPoint) {
+        Marker marker = new Marker(mapView);
+        marker.setPosition(geoPoint);
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+        // Set a custom marker icon if you have one
+        Drawable markerIcon = ContextCompat.getDrawable(this, R.drawable.destination_location);
+        marker.setIcon(markerIcon);
+
+        mapView.getOverlays().add(marker);
+        mapView.invalidate();  // Refresh the map to display the marker
+
+        // Introduce a delay before adding the click listener to the marker
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                addOnClickListener(marker, geoPoint);
+            }
+        }, 1000);  // Delay in milliseconds (1000ms = 1 second)
+    }
+
+    private void addOnClickListener(Marker marker, GeoPoint geoPoint){
+        marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                showPopupMenu(marker, geoPoint);
+                return false;
+            }
+        });
+    }
+
     public void getCoordinatesForAddress(String address) {
         nominatimService.getCoordinates(address, new NominatimService.GeocodingCallback() {
             @Override
@@ -352,12 +411,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         // Show the popup window next to the marker
         // Calculate the offset in pixels
-        int xOffset = dpToPx(150);
+        int xOffset = dpToPx(50);
         int yOffset = dpToPx(100);
-        popupWindow.showAsDropDown(mapView, (int) marker.getPosition().getLongitude(), (int) marker.getPosition().getLatitude(), Gravity.NO_GRAVITY);
-
+        //popupWindow.showAsDropDown(mapView, (int) marker.getPosition().getLongitude(), (int) marker.getPosition().getLatitude(), Gravity.TOP);
+        // Ensure the popup is shown above the bottom navigation
+        popupWindow.showAtLocation(mapView, Gravity.TOP | Gravity.START, xOffset, yOffset);
         // Adjust position of the PopupWindow
-        popupWindow.showAtLocation(mapView, Gravity.NO_GRAVITY, xOffset, yOffset);
+        //popupWindow.showAtLocation(mapView, Gravity.TOP, xOffset, yOffset);
     }
 
     private int dpToPx(int dp) {
@@ -414,100 +474,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
-        /*Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
-        call.enqueue(new Callback<RoutingResponse>() {
-            @Override
-            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<GeoPoint> routePoints = new ArrayList<>();
-                    for (List<Double> point : response.body().routes.get(0).geometry.coordinates) {
-                        routePoints.add(new GeoPoint(point.get(1), point.get(0)));
-                    }
-                    drawRoute(routePoints);
-                } else {
-                    Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RoutingResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
-            }
-        });*/
-        /*Call<RoutingResponse> call = routingService.getRoute(startCoords, endCoords, "full", "geojson");
-        call.enqueue(new Callback<RoutingResponse>() {
-            @Override
-            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<GeoPoint> routePoints = new ArrayList<>();
-                    List<String> instructions = new ArrayList<>();
-
-                    for (int i = 0; i < response.body().routes.get(0).geometry.coordinates.size(); i++) {
-                        List<Double> point = response.body().routes.get(0).geometry.coordinates.get(i);
-                        routePoints.add(new GeoPoint(point.get(1), point.get(0)));
-                    }
-
-                    drawRoute(routePoints);
-                } else {
-                    Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RoutingResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Failed to get route", Toast.LENGTH_SHORT).show();
-            }
-        });*/
-
-        // If the interface expects alternatives as a String
-        /*Call<RoutingResponse> call = routingService.getRoute(
-                startCoords,
-                endCoords,
-                "full",      // Example value for overview, adjust as needed
-                "geojson"    // Example value for geometries, adjust as needed
-        );
-
-        call.enqueue(new Callback<RoutingResponse>() {
-            @Override
-            public void onResponse(Call<RoutingResponse> call, Response<RoutingResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<List<GeoPoint>> allRoutes = new ArrayList<>();
-
-                    // Assuming the response includes multiple routes
-                    for (RoutingResponse.Route route : response.body().routes) {
-                        List<GeoPoint> routePoints = new ArrayList<>();
-                        for (List<Double> point : route.geometry.coordinates) {
-                            routePoints.add(new GeoPoint(point.get(1), point.get(0)));
-                        }
-                        allRoutes.add(routePoints);
-                    }
-
-                    drawRoute(allRoutes);
-                } else {
-                    Log.d("GPS_ROUTES", "IN here");
-                    Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RoutingResponse> call, Throwable t) {
-                Log.d("GPS_ROUTES", t.getMessage());
-                Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
-                Log.d("GPS_ROUTES", t.getMessage());
-            }
-        });*/
     }
 
     private void drawRoute(List<List<GeoPoint>> allRoutes) {//List<GeoPoint> routePoints) {
-        /*
-        Polyline routeLine = new Polyline();
-        routeLine.setPoints(routePoints);
-        mapView.getOverlays().add(routeLine);
-        mapView.invalidate();
-        mapView.getController().setZoom(15);*/
         // Clear previous routes
         mapView.getOverlays().clear();
         mapView.invalidate();
@@ -597,10 +566,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         int markerResource;
         switch (label) {
             case "work":
-                markerResource = R.drawable.work_place; // Your workplace marker drawable
+                markerResource = R.drawable.work_place;
                 break;
             case "home":
-                markerResource = R.drawable.home_location; // Your home marker drawable
+                markerResource = R.drawable.home_location;
+                break;
+            case "posao":
+                markerResource = R.drawable.work_place;
+                break;
+            case "dom":
+                markerResource = R.drawable.home_location;
                 break;
             default:
                 markerResource = R.drawable.destination_location; // Default marker drawable
@@ -608,161 +583,4 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
         return ContextCompat.getDrawable(this, markerResource);
     }
-
-    /*public static void graphPlotting(Context context, float bike_mean, float bike_std, float bus_mean, float bus_std,
-                                     float car_mean, float car_std, float motor_mean, float motor_std,
-                                     float people_mean, float people_std, float train_mean, float train_std,
-                                     float truck_mean, float truck_std) {
-
-        // Create a list of means and standard deviations
-        float[] means = {bike_mean, bus_mean, car_mean, motor_mean, people_mean, train_mean, truck_mean};
-        float[] stdDevs = {bike_std, bus_std, car_std, motor_std, people_std, train_std, truck_std};
-        String[] labels = {"Bike", "Bus", "Car", "Motor", "People", "Train", "Truck"};
-
-        // Initialize bar entries and error bars
-        ArrayList<BarEntry> entries = new ArrayList<>();
-
-        for (int i = 0; i < means.length; i++) {
-            entries.add(new BarEntry(i, means[i], stdDevs[i])); // x index, mean, std deviation
-        }
-
-        BarDataSet barDataSet = new BarDataSet(entries, "Transport Means");
-        barDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-        barDataSet.setDrawValues(true);
-
-        BarData barData = new BarData(barDataSet);
-
-        // Create a BarChart
-        BarChart barChart = new BarChart(context);
-        barChart.setData(barData);
-        barChart.getDescription().setEnabled(false);
-
-        // Customize the x-axis
-        XAxis xAxis = barChart.getXAxis();
-        xAxis.setGranularity(1f);
-        xAxis.setCenterAxisLabels(false);
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        //xAxis.setValueFormatter((value, axis) -> labels[(int) value]);
-        //xAxis.setValueFormatter((value, axis) -> labels[(int) Math.round(value)]);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-
-        // Customize the y-axis
-        YAxis leftAxis = barChart.getAxisLeft();
-        leftAxis.setAxisMinimum(0f);
-        YAxis rightAxis = barChart.getAxisRight();
-        rightAxis.setEnabled(false);
-
-        barChart.setFitBars(true); // make the x-axis fit exactly all bars
-        barChart.invalidate(); // refresh
-
-        // Inflate the custom layout for the dialog
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_chart, null);
-
-        // Add the chart to the custom layout
-        ((LinearLayout) dialogView.findViewById(R.id.chartContainer)).addView(barChart);
-
-        // Create and show the AlertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(dialogView);
-
-        final AlertDialog dialog = builder.create();
-
-        // Set the click listener for the OK button
-        Button okButton = dialogView.findViewById(R.id.okButton);
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
-    }*/
-
-    public static void graphPlotting(Context context, float bike_mean, float bike_std, float bus_mean, float bus_std,
-                                     float car_mean, float car_std, float motor_mean, float motor_std,
-                                     float people_mean, float people_std, float train_mean, float train_std,
-                                     float truck_mean, float truck_std) {
-
-        // Create a list of means and standard deviations
-        float[] means = {bike_mean, bus_mean, car_mean, motor_mean, people_mean, train_mean, truck_mean};
-        float[] stdDevs = {bike_std, bus_std, car_std, motor_std, people_std, train_std, truck_std};
-        String[] labels = {"Bike", "Bus", "Car", "Motor", "People", "Train", "Truck"};
-
-        // Initialize bar entries and error bars
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        ArrayList<Integer> colors = new ArrayList<>();
-
-        for (int i = 0; i < means.length; i++) {
-            entries.add(new BarEntry(i, means[i], stdDevs[i])); // x index, mean, std deviation
-            colors.add(getColorForValue(means[i])); // Use a method to determine the color based on value
-        }
-
-        // Create a BarDataSet from the entries
-        BarDataSet barDataSet = new BarDataSet(entries, "Transport Means");
-        barDataSet.setColors(colors); // Set colors for each bar
-        barDataSet.setDrawValues(true); // Show values on top of bars
-
-        BarData barData = new BarData(barDataSet);
-
-        // Create a BarChart
-        BarChart barChart = new BarChart(context);
-        barChart.setData(barData);
-        barChart.getDescription().setEnabled(false);
-
-        // Customize the x-axis
-        XAxis xAxis = barChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels)); // Use labels as the x-axis labels
-        xAxis.setDrawGridLines(false); // Disable grid lines on the x-axis
-        xAxis.setGranularity(1f); // Ensure the x-axis labels correspond to each bar
-        xAxis.setCenterAxisLabels(false);
-
-        // Customize the y-axis
-        YAxis leftAxis = barChart.getAxisLeft();
-        leftAxis.setAxisMinimum(0f); // Start y-axis from 0
-        YAxis rightAxis = barChart.getAxisRight();
-        rightAxis.setEnabled(false); // Disable the right y-axis
-
-        // Customize the chart appearance
-        barChart.setFitBars(true); // Make the x-axis fit exactly all bars
-        barChart.invalidate(); // Refresh the chart
-
-        // Inflate the custom layout for the dialog
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View dialogView = inflater.inflate(R.layout.dialog_chart, null);
-
-        // Add the chart to the custom layout
-        ((LinearLayout) dialogView.findViewById(R.id.chartContainer)).addView(barChart);
-
-        // Create and show the AlertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(dialogView);
-
-        final AlertDialog dialog = builder.create();
-
-        // Set the click listener for the OK button
-        Button okButton = dialogView.findViewById(R.id.okButton);
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
-    }
-
-    // Helper method to get color based on value (adjust logic as needed)
-    private static int getColorForValue(float value) {
-        if (value < 10) {
-            return ColorTemplate.COLORFUL_COLORS[0]; // Example color for low values
-        } else if (value < 20) {
-            return ColorTemplate.COLORFUL_COLORS[1]; // Example color for medium values
-        } else {
-            return ColorTemplate.COLORFUL_COLORS[2]; // Example color for high values
-        }
-    }
-
 }

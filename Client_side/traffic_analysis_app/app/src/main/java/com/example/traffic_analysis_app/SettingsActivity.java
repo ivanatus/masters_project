@@ -30,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        return false;
+        return true;
     }
 
     private void removeOverflowMenu(Menu menu) {
