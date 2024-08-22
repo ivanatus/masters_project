@@ -99,13 +99,13 @@ public class ChartFragment extends Fragment {
         means.add(1.8f);
 
         ArrayList<String> labels = new ArrayList<>();
-        labels.add("Bike");
+        labels.add("Bicikl");
         labels.add("Bus");
-        labels.add("Car");
+        labels.add("Auto");
         labels.add("Motor");
-        labels.add("People");
-        labels.add("Train");
-        labels.add("Truck");
+        labels.add("Ljudi");
+        labels.add("Vlak");
+        labels.add("Kamion");
 
         ArrayList<Float> deviations = new ArrayList<>();
         deviations.add(0.7f);
@@ -121,109 +121,6 @@ public class ChartFragment extends Fragment {
 
         return view;
     }
-
-    /*public void setupBarChart(BarChart chart, ArrayList<Float> means, ArrayList<Float> deviations, ArrayList<String> labels) {
-        List<Pair<String, Float>> dateMovementPairs = new ArrayList<>();
-
-        for (int i = 0; i < labels.size(); i++) {
-            dateMovementPairs.add(new Pair<>(labels.get(i), means.get(i)));
-        }
-
-        // Create a list of entries for the chart
-        List<BarEntry> entries = new ArrayList<>();
-        ArrayList<String> sortedDates = new ArrayList<>();
-        ArrayList<Integer> colors = new ArrayList<>();
-
-        for (int i = 0; i < dateMovementPairs.size(); i++) {
-            Pair<String, Float> pair = dateMovementPairs.get(i);
-            float value = pair.second;
-            entries.add(new BarEntry(i, value));
-            colors.add(getColorForValue(value));
-        }
-
-        // Create a BarDataSet from the entries
-        BarDataSet dataSet = new BarDataSet(entries, "");
-        dataSet.setColors(colors);
-        dataSet.setDrawValues(true); // Show values on top of bars
-
-        // Create a BarData object and add the dataSet to it
-        ArrayList<IBarDataSet> dataSets = new ArrayList<>();
-        dataSets.add(dataSet);
-        BarData barData = new BarData(dataSets);
-
-        // Set up the X-axis (assuming x[] represents dates)
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(sortedDates));
-        xAxis.setDrawGridLines(false);
-
-        // Set the data to the chart
-        chart.setData(barData);
-        chart.setFitBars(true); // Make the bars fit into the x-axis
-
-        // Refresh the chart to display the data
-        chart.invalidate();
-    }
-
-    // Function that checks which color bar in the barchart should be
-    private int getColorForValue(float value) {
-        float threshold_lower = 6.0f;
-        float threshold_upper = 9.0f;
-
-        if (value < threshold_lower) {
-            return Color.parseColor("#FFA500"); // Orange
-        } else if (value >= threshold_lower && value <= threshold_upper) {
-            return Color.parseColor("#FAC710"); // Yellow
-        } else {
-            return Color.parseColor("#88ab4b"); // Green
-        }
-    }*/
-
-    /*public void setupBarChart(BarChart chart, ArrayList<Float> means, ArrayList<Float> deviations, ArrayList<String> labels) {
-        if (means.size() != deviations.size() || means.size() != labels.size()) {
-            throw new IllegalArgumentException("The size of means, deviations, and labels must be the same.");
-        }
-
-        // Create a list of entries for the chart
-        List<BarEntry> entries = new ArrayList<>();
-        ArrayList<Integer> colors = new ArrayList<>();
-
-        for (int i = 0; i < means.size(); i++) {
-            float mean = means.get(i);
-            float deviation = deviations.get(i);
-            entries.add(new BarEntry(i, mean)); // BarEntry with mean value
-            colors.add(getColorForValue(mean)); // Assign color based on value
-        }
-
-        // Create a BarDataSet from the entries
-        BarDataSet dataSet = new BarDataSet(entries, "");
-        dataSet.setColors(colors);
-        dataSet.setDrawValues(true); // Show values on top of bars
-
-        // Add error bars (standard deviation) to the dataset
-        dataSet.setBarBorderWidth(1f); // Set border width for the bars (if needed)
-
-        // Set up the X-axis
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-        xAxis.setDrawGridLines(false);
-
-        // Customize the Y-axis
-        YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setAxisMinimum(0f); // Start y-axis from 0
-        YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false); // Disable the right y-axis
-
-        // Create BarData object and add the dataset to it
-        BarData barData = new BarData(dataSet);
-        chart.setData(barData);
-
-        chart.setFitBars(true); // Make the bars fit into the x-axis
-
-        // Refresh the chart to display the data
-        chart.invalidate();
-    }*/
 
     // Function that checks which color bar in the barchart should be
     private int getColorForValue(float value) {
@@ -277,5 +174,8 @@ public class ChartFragment extends Fragment {
 
         chart.setFitBars(true); // Make the bars fit into the x-axis
         chart.invalidate(); // Refresh the chart
+
+        chart.updateChartData(barData, deviations);
+
     }
 }

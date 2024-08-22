@@ -2,11 +2,286 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     android:padding="16dp">
 
     <com.example.traffic_analysis_app.CustomBarChart
         android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <com.example.traffic_analysis_app.CustomBarChart
+        android:id="@+id/otherBarChart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/statTest"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:orientation="vertical">
+        <TextView
+            android:text="Usporedba statističkim testovima"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/usedStatTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ANOVA test"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:textStyle="bold"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Testna statistika:"
+                android:layout_marginTop="20dp"/>
+            <TextView
+                android:id="@+id/testStatistics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.56789"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P-vrijednost:"
+                android:layout_marginTop="20dp"/>
+            <TextView
+                android:id="@+id/pValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.56789"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interpretacija:"
+                android:layout_marginTop="20dp"/>
+            <TextView
+                android:id="@+id/interpretationMain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed venenatis elit et quam pulvinar, in vehicula odio ultrices. Nullam molestie elit nec dignissim aliquam."
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/postHocLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Post-HOC analiza"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"
+                android:textStyle="bold"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/postHocTest1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Upareni t-test nad grupama 1 i 2"
+                android:layout_marginTop="20dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Testna statistika:"/>
+
+                <TextView
+                    android:id="@+id/testStatisticsPostHoc1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="P-vrijednost:"/>
+
+                <TextView
+                    android:id="@+id/pValuePostHoc1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/interpretationPostHoc1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+            <TextView
+                android:id="@+id/postHocTest2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Wilcoxon Signed Rank test nad grupama 1 i 3"
+                android:layout_marginTop="20dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Testna statistika:"/>
+
+                <TextView
+                    android:id="@+id/testStatisticsPostHoc2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="P-vrijednost:"/>
+
+                <TextView
+                    android:id="@+id/pValuePostHoc2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/interpretationPostHoc2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+            <TextView
+                android:id="@+id/postHocTest3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="Wilcoxon Signed Rank test nad grupama 2 i 3"
+                android:layout_marginTop="20dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Testna statistika:"/>
+
+                <TextView
+                    android:id="@+id/testStatisticsPostHoc3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="P-vrijednost:"/>
+
+                <TextView
+                    android:id="@+id/pValuePostHoc3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0.56789"
+                    android:layout_marginLeft="10dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/interpretationPostHoc3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/carStats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Motorna vozila"
+                android:layout_marginRight="10dp"
+                android:backgroundTint="@color/blue"/>
+            <Button
+                android:id="@+id/bikeStats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bicikl"
+                android:layout_marginRight="10dp"
+                android:backgroundTint="@color/blue"/>
+            <Button
+                android:id="@+id/peopleStats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ljudi"
+                android:backgroundTint="@color/blue"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

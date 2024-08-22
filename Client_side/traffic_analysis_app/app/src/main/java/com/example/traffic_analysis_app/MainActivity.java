@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -51,7 +52,9 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +77,11 @@ import com.github.mikephil.charting.data.BarLineScatterCandleBubbleDataSet;
 import com.github.mikephil.charting.data.BarLineScatterCandleBubbleData;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     MapView mapView;
@@ -84,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private NominatimService nominatimService;
     private RoutingService routingService;
     EditText address;
-    ImageButton search;
+    ImageButton search, analytics;
     GeoPoint current_location;
     boolean directions = false;
     boolean showToolbarMenu = false;
@@ -189,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         nominatimService = new NominatimService();
         address = findViewById(R.id.address_search);
         search = findViewById(R.id.search_address);
+        analytics = findViewById(R.id.analyticsButton);
 
         if (mapView != null) {
             mapView.setTileSource(TileSourceFactory.MAPNIK);
@@ -230,6 +239,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         fragmentTransaction.replace(R.id.fragmentContainer, chartFragment);
         fragmentTransaction.commit();
+
+        analytics.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FrameLayout fragment = findViewById(R.id.fragmentContainer);
+                if(fragment.getVisibility() == View.GONE) {
+                    fragment.setVisibility(View.VISIBLE);
+                } else {
+                    fragment.setVisibility(View.GONE);
+                }
+            }
+        });
 
         //graphPlotting(this, 4.5f, 0.7f, 2.3f, 0.2f,13f, 3.6f, 1.5f, 0.9f,5.3f, 2.7f, 0.8f, 1f,2.3f, 1.8f);
     }
@@ -462,6 +483,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     }
 
                     drawRoute(allRoutes);
+                    analytics.setVisibility(View.VISIBLE);
                 } else {
                     Log.d("GPS_ROUTES", "Failed to get routes");
                     Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
@@ -490,6 +512,88 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
         mapView.invalidate();
         mapView.getController().setZoom(15);
+
+        getRouteData(allRoutes);
+    }
+
+    private void getRouteData(List<List<GeoPoint>> allRoutes) {
+        for(List<GeoPoint> route : allRoutes){
+            for(GeoPoint geoPoint : route){
+                Double latitude = geoPoint.getLatitude();
+                Double longitude = geoPoint.getLongitude();
+
+                // Round to 2 decimals
+                latitude = Math.round(latitude*100.0)/100.0;
+                longitude = Math.round(longitude*100.0)/100.0;
+
+                String latitude_str = String.valueOf(latitude);
+                String longitude_str = String.valueOf(longitude);
+
+                latitude_str = latitude_str.replace(".", "_");
+                longitude_str = longitude_str.replace(".", "_");
+
+                String path = latitude_str + "-" + longitude_str;
+
+                SimpleDateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+                Date now = new Date();
+
+                String time = timeFormat.format(now);
+                String dayOfWeek = dayOfWeekFormat.format(now);
+
+                String[] times = time.split(":");
+                String time_path = new String();
+                if(Integer.parseInt(times[1]) < 30){
+                    time_path = times[0] + "_00-" + times[0] +"_30";
+                } else {
+                    int later_hour = Integer.parseInt(times[0]) + 1;
+                    time_path = times[0] + "_30-" + later_hour + "_00";
+                }
+
+                path = path + "/" + dayOfWeek + "/" + time_path;
+
+                Log.d("GET DATA", path);
+
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(path);
+
+                // Attach a listener to read the data at our path
+                databaseReference.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // This method is called once with the initial value and again whenever data at this location is updated.
+                        if (dataSnapshot.exists()) {
+                            // Retrieve and parse the data
+                            for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                                String key = childSnapshot.getKey();
+                                Object value = childSnapshot.getValue();
+
+                                // You can parse the values as needed
+                                if (value instanceof Long) {
+                                    Long numericValue = (Long) value;
+                                    Log.d("GET DATA", key + ": " + numericValue);
+                                } else if (value instanceof Double) {
+                                    Double numericValue = (Double) value;
+                                    Log.d("GET DATA", key + ": " + numericValue);
+                                } else if (value instanceof String) {
+                                    String stringValue = (String) value;
+                                    Log.d("GET DATA", key + ": " + stringValue);
+                                } else {
+                                    Log.d("GET DATA", key + ": " + value);
+                                }
+                            }
+                        } else {
+                            Log.d("GET DATA", "No data found at this path.");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // Getting data failed, log a message
+                        Log.d("GET DATA", "Failed to read value: " + databaseError.getMessage());
+                    }
+                });
+            }
+        }
     }
 
     private void showSaveLocationDialog(final GeoPoint geoPoint) {
