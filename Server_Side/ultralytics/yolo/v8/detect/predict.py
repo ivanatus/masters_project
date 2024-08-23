@@ -448,9 +448,9 @@ def analyze_and_send(info):
             people_overall += 1
 
     latitude = float(latitude)
-    latitude = round(latitude, 2)
+    latitude = round(latitude, 3)
     longitude = float(longitude)
-    longitude = round(longitude, 2)
+    longitude = round(longitude, 3)
     time = time.split(':')
     interval = ""
     time = list(map(int, time))
