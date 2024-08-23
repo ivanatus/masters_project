@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     GeoPoint current_location;
     boolean directions = false;
     boolean showToolbarMenu = false;
+    public boolean isChartFragmentVisible = false;
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) { return true; }
@@ -235,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        ChartFragment chartFragment = ChartFragment.newInstance(4.5f, 0.7f, 2.3f, 0.2f,13f, 3.6f, 1.5f, 0.9f,5.3f, 2.7f, 0.8f, 1f,2.3f, 1.8f);
+        ChartFragment chartFragment = ChartFragment.newInstance(null);
 
         fragmentTransaction.replace(R.id.fragmentContainer, chartFragment);
         fragmentTransaction.commit();
@@ -245,8 +246,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             public void onClick(View view) {
                 FrameLayout fragment = findViewById(R.id.fragmentContainer);
                 if(fragment.getVisibility() == View.GONE) {
+                    isChartFragmentVisible = true;
                     fragment.setVisibility(View.VISIBLE);
                 } else {
+                    isChartFragmentVisible = false;
                     fragment.setVisibility(View.GONE);
                 }
             }
@@ -316,23 +319,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void addLongClickListenerToMap() {
-        MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
-            @Override
-            public boolean singleTapConfirmedHelper(GeoPoint p) {
-                // Do nothing on single tap
-                return false;
-            }
 
-            @Override
-            public boolean longPressHelper(GeoPoint p) {
-                // This is where the long-press logic goes
-                addMarkerAtLocation(p);
-                return true;
-            }
-        };
+        if(!directions) {
+            Log.d("GETGEOPOINTS", "In addLongClickListenerToMap");
+            MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
+                @Override
+                public boolean singleTapConfirmedHelper(GeoPoint p) {
+                    // Do nothing on single tap
+                    return false;
+                }
 
-        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(getApplicationContext(), mapEventsReceiver);
-        mapView.getOverlays().add(mapEventsOverlay);
+                @Override
+                public boolean longPressHelper(GeoPoint p) {
+                    // This is where the long-press logic goes
+                    addMarkerAtLocation(p);
+                    return true;
+                }
+            };
+
+            MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(getApplicationContext(), mapEventsReceiver);
+            mapView.getOverlays().add(mapEventsOverlay);
+        }
     }
 
     private void addMarkerAtLocation(GeoPoint geoPoint) {
@@ -686,5 +693,73 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 break;
         }
         return ContextCompat.getDrawable(this, markerResource);
+    }
+
+    public void hideChartFragment() {
+        Log.d("GETGEOPOINTS", "In hideChartFragment");
+        FrameLayout fragmentContainer = findViewById(R.id.fragmentContainer);
+        fragmentContainer.setVisibility(View.GONE);
+
+        // Start selecting geopoints on the MapView
+        startSelectingGeoPoints();
+    }
+
+    private void startSelectingGeoPoints() {
+        // Logic for selecting GeoPoints on MapView
+        addGeoPointListenerToMap();
+    }
+
+    // Add a method to pass the selected GeoPoints back to ChartFragment
+    public void onGeoPointsSelected(ArrayList<GeoPoint> selectedGeoPoints) {
+        ChartFragment chartFragment = (ChartFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (chartFragment != null) {
+            chartFragment.updateGeoPoints(selectedGeoPoints);
+        }
+    }
+
+    private void toggleChartFragmentVisibility() {
+        Log.d("GETGEOPOINTS", "In toggleChartFragmentVisibility");
+        FrameLayout fragmentContainer = findViewById(R.id.fragmentContainer);
+        if (isChartFragmentVisible) {
+            fragmentContainer.setVisibility(View.GONE);
+            isChartFragmentVisible = false;
+            Log.d("GETGEOPOINTS", "In toggleChartFragmentVisibility, gone");
+        } else {
+            fragmentContainer.setVisibility(View.VISIBLE);
+            isChartFragmentVisible = true;
+            Log.d("GETGEOPOINTS", "In toggleChartFragmentVisibility, visible");
+        }
+    }
+
+    private void addGeoPointListenerToMap() {
+        if(directions) {
+            Log.d("GETGEOPOINTS", "In addGeoPointListenerToMap");
+            MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
+                @Override
+                public boolean singleTapConfirmedHelper(GeoPoint p) {
+                    return false;
+                }
+
+                @Override
+                public boolean longPressHelper(GeoPoint p) {
+                    // Store selected geopoints in an ArrayList
+                    ArrayList<GeoPoint> selectedGeoPoints = new ArrayList<>();
+                    selectedGeoPoints.add(p);
+
+                    // Pass selected points back to the ChartFragment
+                    analytics.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onGeoPointsSelected(selectedGeoPoints);
+                            toggleChartFragmentVisibility();
+                        }
+                    });
+                    return true;
+                }
+            };
+
+            MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(getApplicationContext(), mapEventsReceiver);
+            mapView.getOverlays().add(mapEventsOverlay);
+        }
     }
 }

@@ -5,16 +5,19 @@
     android:background="@color/white"
     android:padding="16dp">
 
+    <ImageButton
+        android:id="@+id/typeOfStats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/compare_icon"
+        android:backgroundTint="@color/white"
+        android:layout_gravity="right"/>
+
+
     <com.example.traffic_analysis_app.CustomBarChart
         android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
-    <com.example.traffic_analysis_app.CustomBarChart
-        android:id="@+id/otherBarChart"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/statTest"

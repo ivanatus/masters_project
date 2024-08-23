@@ -11,7 +11,7 @@
         android:layout_gravity="right"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get directions to this location"
+        android:text="Prikaži upute do ove lokacije"
         android:padding="8dp" />
 
     <TextView
@@ -19,6 +19,6 @@
         android:layout_gravity="right"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save location"
+        android:text="Spremi lokaciju"
         android:padding="8dp" />
 </LinearLayout>

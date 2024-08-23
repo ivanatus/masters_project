@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/offwhite"
-                android:hint="Where to?"/>
+                android:hint="Upišite adresu"/>
             <ImageButton
                 android:id="@+id/search_address"
                 android:layout_width="wrap_content"
@@ -56,7 +56,7 @@
                 app:cardCornerRadius="8dp"
                 android:layout_gravity="right"
                 android:layout_marginRight="20dp"
-                android:layout_marginTop="250dp"
+                android:layout_marginTop="580dp"
                 android:backgroundTint="@color/blue">
                 <ImageButton
                     android:id="@+id/analyticsButton"
