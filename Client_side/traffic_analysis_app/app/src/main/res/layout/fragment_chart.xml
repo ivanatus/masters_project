@@ -1,29 +1,43 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/white"
-    android:padding="16dp">
+    android:padding="13dp">
 
     <ImageButton
         android:id="@+id/typeOfStats"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/compare_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/select_icon"
         android:backgroundTint="@color/white"
         android:layout_gravity="right"/>
 
+    <TextView
+        android:id="@+id/warningText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Molimo odaberite prometnice za koje će se prikazati podatci."
+        android:textSize="18sp"
+        android:textAlignment="center"
+        android:visibility="visible"/>
 
     <com.example.traffic_analysis_app.CustomBarChart
         android:id="@+id/barChart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <LinearLayout
         android:id="@+id/statTest"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
+        android:layout_weight="1"
         android:orientation="vertical">
         <TextView
             android:text="Usporedba statističkim testovima"
@@ -52,13 +66,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Testna statistika:"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="10dp"/>
             <TextView
                 android:id="@+id/testStatistics"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.56789"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"/>
         </LinearLayout>
 
@@ -71,13 +85,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="P-vrijednost:"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="10dp"/>
             <TextView
                 android:id="@+id/pValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.56789"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"/>
         </LinearLayout>
 
@@ -90,13 +104,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Interpretacija:"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="10dp"/>
             <TextView
                 android:id="@+id/interpretationMain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed venenatis elit et quam pulvinar, in vehicula odio ultrices. Nullam molestie elit nec dignissim aliquam."
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"/>
         </LinearLayout>
 
@@ -104,13 +118,14 @@
             android:id="@+id/postHocLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="vertical">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Post-HOC analiza"
                 android:layout_gravity="center"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="15dp"
                 android:textStyle="bold"
                 android:textSize="14sp"/>
 
@@ -120,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:text="Upareni t-test nad grupama 1 i 2"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="10dp"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -167,7 +182,7 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:text="Wilcoxon Signed Rank test nad grupama 1 i 3"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="15dp"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -214,7 +229,7 @@
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:text="Wilcoxon Signed Rank test nad grupama 2 i 3"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="15dp"/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -259,7 +274,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:layout_gravity="center"
             android:orientation="horizontal">
 
@@ -286,5 +301,6 @@
         </LinearLayout>
 
     </LinearLayout>
+    </RelativeLayout>
 
-</LinearLayout>
+</FrameLayout>

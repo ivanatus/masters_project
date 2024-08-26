@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     GeoPoint current_location;
     boolean directions = false;
     boolean showToolbarMenu = false;
-    public boolean isChartFragmentVisible = false;
+    public boolean isChartFragmentVisible = false, selectingGeopoints = false;
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) { return true; }
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             mapView.setTileSource(TileSourceFactory.MAPNIK);
             mapView.setMultiTouchControls(true);
         } else {
-            Log.e("MainActivity", "MapView is null");
+            Log.e("MAPVIEW", "MapView is null");
             return;
         }
 
@@ -220,8 +220,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             //ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, android.Manifest.permission.REQUEST_LOCATION_PERMISSION);
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
         } else {
-            // Permissions already granted, proceed with location access
-            startLocationUpdates();
+            if(mapView != null) {
+                // Permissions already granted, proceed with location access
+                startLocationUpdates();
+            }
         }
 
         search.setOnClickListener(new View.OnClickListener() {
@@ -259,7 +261,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void startLocationUpdates() {
-        Log.d("LocationTAG", "startLocationUpdates");
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (locationManager != null) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -310,7 +311,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mapView.getController().setCenter(currentLocation);
 
         if(directions){
-            Log.d("Directions", "Directions true");
             if (location.hasBearing()) {
                 Log.d("Directions", "location.hasBearing");
                 mapView.setMapOrientation(-location.getBearing());
@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     private void addLongClickListenerToMap() {
 
-        if(!directions) {
+        if(!selectingGeopoints) {
             Log.d("GETGEOPOINTS", "In addLongClickListenerToMap");
             MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
                 @Override
@@ -400,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             @Override
             public void onFailure(Throwable t) {
                 // Handle the error
-                Toast.makeText(MainActivity.this, "Failed to get coordinates: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Neuspješno preuzimanje koordinata: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         saveLocationOption.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Save location clicked", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "Save location clicked", Toast.LENGTH_SHORT).show();
                 showSaveLocationDialog(marker.getPosition());
                 popupWindow.dismiss();
             }
@@ -454,11 +454,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void getDirections(GeoPoint start, GeoPoint end) {
         if (start == null) {
-            Toast.makeText(this, "Invalid start location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nevaljana početna lokacija.", Toast.LENGTH_SHORT).show();
             return;
         }
         if (end == null) {
-            Toast.makeText(this, "Invalid end location", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nevaljana lokacija destinacije.", Toast.LENGTH_SHORT).show();
             return;
         }
         directions = true;
@@ -493,14 +493,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     analytics.setVisibility(View.VISIBLE);
                 } else {
                     Log.d("GPS_ROUTES", "Failed to get routes");
-                    Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Neuspješno preuzimanje ruta do destinacije.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<RoutingResponse> call, Throwable t) {
                 Log.d("GPS_ROUTES", t.getMessage());
-                Toast.makeText(MainActivity.this, "Failed to get routes", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Neuspješno preuzimanje ruta do destinacije.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -519,88 +519,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
         mapView.invalidate();
         mapView.getController().setZoom(15);
-
-        getRouteData(allRoutes);
-    }
-
-    private void getRouteData(List<List<GeoPoint>> allRoutes) {
-        for(List<GeoPoint> route : allRoutes){
-            for(GeoPoint geoPoint : route){
-                Double latitude = geoPoint.getLatitude();
-                Double longitude = geoPoint.getLongitude();
-
-                // Round to 2 decimals
-                latitude = Math.round(latitude*100.0)/100.0;
-                longitude = Math.round(longitude*100.0)/100.0;
-
-                String latitude_str = String.valueOf(latitude);
-                String longitude_str = String.valueOf(longitude);
-
-                latitude_str = latitude_str.replace(".", "_");
-                longitude_str = longitude_str.replace(".", "_");
-
-                String path = latitude_str + "-" + longitude_str;
-
-                SimpleDateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
-                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
-                Date now = new Date();
-
-                String time = timeFormat.format(now);
-                String dayOfWeek = dayOfWeekFormat.format(now);
-
-                String[] times = time.split(":");
-                String time_path = new String();
-                if(Integer.parseInt(times[1]) < 30){
-                    time_path = times[0] + "_00-" + times[0] +"_30";
-                } else {
-                    int later_hour = Integer.parseInt(times[0]) + 1;
-                    time_path = times[0] + "_30-" + later_hour + "_00";
-                }
-
-                path = path + "/" + dayOfWeek + "/" + time_path;
-
-                Log.d("GET DATA", path);
-
-                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(path);
-
-                // Attach a listener to read the data at our path
-                databaseReference.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // This method is called once with the initial value and again whenever data at this location is updated.
-                        if (dataSnapshot.exists()) {
-                            // Retrieve and parse the data
-                            for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
-                                String key = childSnapshot.getKey();
-                                Object value = childSnapshot.getValue();
-
-                                // You can parse the values as needed
-                                if (value instanceof Long) {
-                                    Long numericValue = (Long) value;
-                                    Log.d("GET DATA", key + ": " + numericValue);
-                                } else if (value instanceof Double) {
-                                    Double numericValue = (Double) value;
-                                    Log.d("GET DATA", key + ": " + numericValue);
-                                } else if (value instanceof String) {
-                                    String stringValue = (String) value;
-                                    Log.d("GET DATA", key + ": " + stringValue);
-                                } else {
-                                    Log.d("GET DATA", key + ": " + value);
-                                }
-                            }
-                        } else {
-                            Log.d("GET DATA", "No data found at this path.");
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        // Getting data failed, log a message
-                        Log.d("GET DATA", "Failed to read value: " + databaseError.getMessage());
-                    }
-                });
-            }
-        }
     }
 
     private void showSaveLocationDialog(final GeoPoint geoPoint) {
@@ -641,7 +559,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         editor.putString(label, geoPointString);
         editor.apply();
 
-        Toast.makeText(this, "Location saved with label: " + label, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Lokacija spremljena pod oznakom: " + label, Toast.LENGTH_SHORT).show();
     }
 
     private void showMarkersFromSharedPreferences() {
@@ -699,6 +617,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Log.d("GETGEOPOINTS", "In hideChartFragment");
         FrameLayout fragmentContainer = findViewById(R.id.fragmentContainer);
         fragmentContainer.setVisibility(View.GONE);
+        selectingGeopoints = true;
 
         // Start selecting geopoints on the MapView
         startSelectingGeoPoints();
@@ -712,6 +631,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     // Add a method to pass the selected GeoPoints back to ChartFragment
     public void onGeoPointsSelected(ArrayList<GeoPoint> selectedGeoPoints) {
         ChartFragment chartFragment = (ChartFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        selectingGeopoints = false;
         if (chartFragment != null) {
             chartFragment.updateGeoPoints(selectedGeoPoints);
         }
@@ -732,7 +652,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void addGeoPointListenerToMap() {
-        if(directions) {
+        if(selectingGeopoints) {
             Log.d("GETGEOPOINTS", "In addGeoPointListenerToMap");
             MapEventsReceiver mapEventsReceiver = new MapEventsReceiver() {
                 @Override

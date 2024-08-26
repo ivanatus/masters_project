@@ -581,7 +581,7 @@ def analyze_and_send(info):
     'mean_train': float(train_mean),
     'med_train': float(train_median),
     'std_train': float(train_std),
-    'ppl_train': float(train_p_value),
+    'train_shapiro': float(train_p_value),
     'mean_bike': float(bikes_mean),
     'med_bike': float(bikes_median),
     'std_bike': float(bikes_std),
@@ -589,7 +589,7 @@ def analyze_and_send(info):
     'mean_motor': float(motorbikes_mean),
     'med_motor': float(motorbikes_median),
     'std_motor': float(motorbikes_std),
-    'ppl_motor': float(motorbikes_p_value)
+    'motor_shapiro': float(motorbikes_p_value)
 }
 
     # Reference and set data in Realtime Database
