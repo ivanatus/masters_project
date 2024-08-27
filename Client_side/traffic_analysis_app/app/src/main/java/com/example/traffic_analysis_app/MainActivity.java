@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -45,6 +46,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
@@ -179,6 +181,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     Log.d("ANOVASTATS", "ID recognized");
                     Intent info = new Intent(getApplicationContext(), InfoActivity.class);
                     startActivity(info);
+                    finish();
+                } else if(id == R.id.settings) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
                     finish();
                 }
                 return false;
@@ -489,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                         allRoutes.add(routePoints);
                     }
 
-                    drawRoute(allRoutes);
+                    drawRoute(allRoutes, start, end);
                     analytics.setVisibility(View.VISIBLE);
                 } else {
                     Log.d("GPS_ROUTES", "Failed to get routes");
@@ -505,21 +511,70 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         });
     }
 
-    private void drawRoute(List<List<GeoPoint>> allRoutes) {//List<GeoPoint> routePoints) {
+    private List<GeoPoint> interpolatePoints(List<GeoPoint> points) {
+        List<GeoPoint> interpolatedPoints = new ArrayList<>();
+        for (int i = 0; i < points.size() - 1; i++) {
+            GeoPoint start = points.get(i);
+            GeoPoint end = points.get(i + 1);
+
+            interpolatedPoints.add(start);
+
+            // Interpolate a point between start and end
+            double lat = (start.getLatitude() + end.getLatitude()) / 2;
+            double lon = (start.getLongitude() + end.getLongitude()) / 2;
+            interpolatedPoints.add(new GeoPoint(lat, lon));
+        }
+        interpolatedPoints.add(points.get(points.size() - 1));  // Add the last point
+        return interpolatedPoints;
+    }
+
+
+    private void drawRoute(List<List<GeoPoint>> allRoutes, GeoPoint start, GeoPoint end) {//List<GeoPoint> routePoints) {
         // Clear previous routes
         mapView.getOverlays().clear();
         mapView.invalidate();
 
-        for (List<GeoPoint> routePoints : allRoutes) {
+        /*for (List<GeoPoint> routePoints : allRoutes) {
             Polyline routeLine = new Polyline();
             routeLine.setPoints(routePoints);
             routeLine.setColor(Color.BLUE); // Set a color for the route
             routeLine.setWidth(5); // Set the width of the route line
             mapView.getOverlays().add(routeLine);
+        }*/
+
+        for (List<GeoPoint> routePoints : allRoutes) {
+            // Interpolate points to smooth the line
+            List<GeoPoint> smoothRoutePoints = interpolatePoints(routePoints);
+
+            Polyline routeLine = new Polyline();
+            routeLine.setPoints(smoothRoutePoints);
+            routeLine.setColor(Color.BLUE);  // Set your desired color
+            routeLine.setWidth(10);  // Increase width for better visibility
+
+            // Add anti-aliasing for smoother lines
+            routeLine.getPaint().setAntiAlias(true);
+
+            mapView.getOverlays().add(routeLine);
         }
+
         mapView.invalidate();
-        mapView.getController().setZoom(15);
+        //mapView.getController().setZoom(15);
+        centerMapOnRoute(start, end, mapView);
     }
+
+    public void centerMapOnRoute(GeoPoint startPoint, GeoPoint endPoint, MapView mapView) {
+        // Calculate the bounding box
+        double minLat = Math.min(startPoint.getLatitude(), endPoint.getLatitude());
+        double maxLat = Math.max(startPoint.getLatitude(), endPoint.getLatitude());
+        double minLon = Math.min(startPoint.getLongitude(), endPoint.getLongitude());
+        double maxLon = Math.max(startPoint.getLongitude(), endPoint.getLongitude());
+
+        BoundingBox boundingBox = new BoundingBox(maxLat + 0.005, maxLon + 0.005, minLat - 0.005, minLon - 0.005);
+
+        // Set the map view to fit the bounding box
+        mapView.zoomToBoundingBox(boundingBox, true);
+    }
+
 
     private void showSaveLocationDialog(final GeoPoint geoPoint) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

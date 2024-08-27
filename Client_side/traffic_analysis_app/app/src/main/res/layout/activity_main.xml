@@ -17,29 +17,9 @@
             app:menu="@menu/toolbar"
             android:background="@color/lightblue"
             app:itemIconTint="@color/white"
+            android:visibility="gone"
             app:title="Analiza prometa"
             app:titleTextColor="@color/white"/>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="10dp"
-            android:backgroundTint="@color/offwhite">
-            <EditText
-                android:id="@+id/address_search"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:backgroundTint="@color/offwhite"
-                android:hint="Upišite adresu"/>
-            <ImageButton
-                android:id="@+id/search_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/offwhite"
-                android:src="@drawable/baseline_search_24"
-                android:layout_gravity="right"/>
-
-        </androidx.cardview.widget.CardView>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -50,6 +30,34 @@
                 android:id="@+id/mapView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/search_bar_background"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="7dp"
+                android:layout_marginRight="7dp"
+                android:visibility="visible"
+                android:layout_gravity="top|center">
+
+                <EditText
+                    android:id="@+id/address_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/blue"
+                    android:background="@null"
+                    android:hint="Upišite adresu"/>
+                <ImageButton
+                    android:id="@+id/search_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/offwhite"
+                    android:src="@drawable/baseline_search_24"
+                    android:layout_alignEnd="@id/address_search"
+                    android:layout_gravity="right"/>
+
+            </RelativeLayout>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
@@ -66,6 +74,7 @@
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/blue"
                     android:src="@drawable/analytics_icon"
+                    android:alpha="0.9"
                     android:visibility="gone"
                     />
             </androidx.cardview.widget.CardView>
@@ -78,15 +87,21 @@
                 android:layout_height="match_parent"
                 android:visibility="gone"/>
 
-        </FrameLayout>
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="7dp"
+                android:layout_marginRight="7dp"
+                android:background="@drawable/bottom_nav_background"
+                android:elevation="10dp"
+                app:itemIconTint="@color/white"
+                android:alpha="0.75"
+                app:menu="@menu/bottom_navigation"
+                app:labelVisibilityMode="labeled" />
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_gravity="bottom"
-            android:background="@color/blue"
-            app:itemIconTint="@color/white"
-            app:menu="@menu/bottom_navigation"/>
+        </FrameLayout>
     </LinearLayout>
 </RelativeLayout>

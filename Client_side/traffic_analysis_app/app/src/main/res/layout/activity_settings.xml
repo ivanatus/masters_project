@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".RecordingActivity">
 
-    <androidx.appcompat.widget.Toolbar
+    <!--androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -15,13 +15,29 @@
         android:background="@color/lightblue"
         app:itemIconTint="@color/white"
         app:title="Analiza prometa"
-        app:titleTextColor="@color/white"/>
+        app:titleTextColor="@color/white"/-->
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/reminderList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:layout_margin="20dp"
+            android:scrollbars="vertical"/>
 
     <LinearLayout
+        android:id="@+id/newReminderSetup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="center|top"
+        android:layout_margin="15dp"
         android:orientation="vertical"
+        android:background="@drawable/search_bar_background"
+        android:visibility="gone"
         android:layout_weight="1">
 
         <EditText
@@ -135,13 +151,31 @@
 
     </LinearLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_gravity="bottom"
-        android:background="@color/blue"
-        app:itemIconTint="@color/white"
-        app:menu="@menu/bottom_navigation"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/newReminder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="80dp"
+            android:src="@drawable/new_reminder_icon"
+            android:tint="@color/white"
+            android:alpha="0.8"
+            app:backgroundTint="@color/offwhite"/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:background="@drawable/bottom_nav_background"
+            android:elevation="10dp"
+            app:itemIconTint="@color/white"
+            android:alpha="0.75"
+            app:menu="@menu/bottom_navigation"
+            app:labelVisibilityMode="labeled" />
+    </FrameLayout>
 
 </LinearLayout>

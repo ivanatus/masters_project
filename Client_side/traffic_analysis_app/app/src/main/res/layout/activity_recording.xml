@@ -15,6 +15,7 @@
         android:background="@color/lightblue"
         app:itemIconTint="@color/white"
         app:title="Analiza prometa"
+        android:visibility="gone"
         app:titleTextColor="@color/white"/>
 
     <FrameLayout
@@ -37,17 +38,35 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:background="@color/white"
+            android:visibility="gone"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="690dp"/>
-    </FrameLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_gravity="bottom"
-        android:background="@color/blue"
-        app:itemIconTint="@color/white"
-        app:menu="@menu/bottom_navigation"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="60dp"
+            android:src="@drawable/camera_record"
+            android:tint="@color/white"
+            android:alpha="0.8"
+            app:backgroundTint="@color/offwhite"/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:background="@drawable/bottom_nav_background"
+            android:elevation="10dp"
+            app:itemIconTint="@color/white"
+            android:alpha="0.75"
+            app:menu="@menu/bottom_navigation"
+            app:labelVisibilityMode="labeled" />
+    </FrameLayout>
 
 </LinearLayout>

@@ -197,7 +197,7 @@ public class ChartFragment extends Fragment {
             getTestData(geoPoint, geoPointData);
         }
 
-        if(foundData){
+        if(foundData && geoPointData != null){
             warningText.setVisibility(View.GONE);
             barChart.setVisibility(View.GONE);
             statTestLayout.setVisibility(View.VISIBLE);
