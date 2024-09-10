@@ -1,35 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/textTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/textDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/textTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"/>
-    </LinearLayout>
-
-</androidx.cardview.widget.CardView-->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -89,26 +58,15 @@
                 android:textColor="@color/white"
                 android:text="M T W T F"
                 android:textSize="12sp"/>
-
-            <!--LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="M T W T F"
-                    android:textColor="@color/blue" />
-
-            </LinearLayout-->
         </LinearLayout>
 
-        <!--Switch
+        <ImageButton
+            android:id="@+id/deleteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:thumbTint="@color/offwhite"
-            android:trackTint="@color/blue"/-->
+            android:src="@drawable/delete_icon"
+            android:background="@color/lightblue"
+            android:layout_gravity="center_vertical"
+            />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

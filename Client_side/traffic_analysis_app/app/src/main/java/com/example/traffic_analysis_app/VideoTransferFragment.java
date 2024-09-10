@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,10 +93,10 @@ public class VideoTransferFragment extends DialogFragment {
             TextView transfer_text = getView().findViewById(R.id.transfer_text);
             Button ok_button = getView().findViewById(R.id.transfer_button);
             transfer_text.setText(progress);
-            if(!progress.equals("Snimka se obrađuje, molim pričekajte...")){
-                ok_button.setVisibility(View.VISIBLE);
-            } else {
+            if(progress.equals("Snimka se obrađuje, molim pričekajte...")){
                 ok_button.setVisibility(View.GONE);
+            } else if(progress.equals("Snimka uspješno poslana na obradu!")){
+                ok_button.setVisibility(View.VISIBLE);
             }
         }
     }

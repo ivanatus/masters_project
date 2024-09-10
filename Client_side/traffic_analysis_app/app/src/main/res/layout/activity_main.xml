@@ -63,10 +63,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="8dp"
-                android:layout_gravity="bottom"
-                android:layout_marginRight="10dp"
-                android:layout_marginLeft="335dp"
-                android:layout_marginBottom="5dp"
+                android:layout_gravity="bottom|right"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="90dp"
                 android:backgroundTint="@color/blue">
                 <ImageButton
                     android:id="@+id/analyticsButton"
@@ -85,6 +84,10 @@
                 android:layout_gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="90dp"
                 android:visibility="gone"/>
 
             <com.google.android.material.bottomnavigation.BottomNavigationView

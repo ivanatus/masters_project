@@ -38,6 +38,7 @@
         android:layout_height="match_parent"
         android:visibility="gone"
         android:layout_weight="1"
+        android:layout_marginTop="30dp"
         android:orientation="vertical">
         <TextView
             android:text="Usporedba statističkim testovima"
@@ -67,13 +68,14 @@
                 android:layout_height="wrap_content"
                 android:text="Testna statistika:"
                 android:layout_marginTop="10dp"/>
+
             <TextView
                 android:id="@+id/testStatistics"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0.56789"
+                android:layout_height="29dp"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp"/>
+                android:text="5.2366534" />
         </LinearLayout>
 
         <LinearLayout
@@ -90,7 +92,7 @@
                 android:id="@+id/pValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0.56789"
+                android:text="0.00027"
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"/>
         </LinearLayout>
@@ -109,7 +111,7 @@
                 android:id="@+id/interpretationMain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed venenatis elit et quam pulvinar, in vehicula odio ultrices. Nullam molestie elit nec dignissim aliquam."
+                android:text="Postoji statistički značajna razlika među srednjim prosječnim vrijednostima uspoređenih skupina podataka."
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"/>
         </LinearLayout>
@@ -152,7 +154,7 @@
                     android:id="@+id/testStatisticsPostHoc1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="2.49801"
                     android:layout_marginLeft="10dp"/>
 
                 <TextView
@@ -165,7 +167,7 @@
                     android:id="@+id/pValuePostHoc1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="0.018"
                     android:layout_marginLeft="10dp"/>
 
             </LinearLayout>
@@ -174,14 +176,14 @@
                 android:id="@+id/interpretationPostHoc1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+                android:text="Interpretacija: Postoji statistički značajna razlika između grupa."/>
 
             <TextView
                 android:id="@+id/postHocTest2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:text="Wilcoxon Signed Rank test nad grupama 1 i 3"
+                android:text="Upareni t-test test nad grupama 1 i 3"
                 android:layout_marginTop="15dp"/>
 
             <LinearLayout
@@ -199,7 +201,7 @@
                     android:id="@+id/testStatisticsPostHoc2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="0.75"
                     android:layout_marginLeft="10dp"/>
 
                 <TextView
@@ -212,7 +214,7 @@
                     android:id="@+id/pValuePostHoc2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="0.464"
                     android:layout_marginLeft="10dp"/>
 
             </LinearLayout>
@@ -221,14 +223,14 @@
                 android:id="@+id/interpretationPostHoc2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+                android:text="Interpretacija: Ne postoji statistički značajna razlika između grupa."/>
 
             <TextView
                 android:id="@+id/postHocTest3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:text="Wilcoxon Signed Rank test nad grupama 2 i 3"
+                android:text="Upareni t-test test nad grupama 2 i 3"
                 android:layout_marginTop="15dp"/>
 
             <LinearLayout
@@ -246,7 +248,7 @@
                     android:id="@+id/testStatisticsPostHoc3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="-3.116001"
                     android:layout_marginLeft="10dp"/>
 
                 <TextView
@@ -259,7 +261,7 @@
                     android:id="@+id/pValuePostHoc3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0.56789"
+                    android:text="0.004133"
                     android:layout_marginLeft="10dp"/>
 
             </LinearLayout>
@@ -268,14 +270,16 @@
                 android:id="@+id/interpretationPostHoc3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Interpretacija: Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+                android:text="Interpretacija: Postoji statistički značajna razlika između grupa."/>
 
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_gravity="center"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <Button
@@ -284,7 +288,7 @@
                 android:layout_height="wrap_content"
                 android:text="Motorna vozila"
                 android:layout_marginRight="10dp"
-                android:backgroundTint="@color/blue"/>
+                android:backgroundTint="@color/lightblue"/>
             <Button
                 android:id="@+id/bikeStats"
                 android:layout_width="wrap_content"

@@ -128,12 +128,12 @@ public class ChartFragment extends Fragment {
         }
 
         /*ArrayList<Float> means = new ArrayList<>();
-        means.add(4.5f);
+        means.add(0.0f);
         means.add(2.3f);
         means.add(13f);
         means.add(1.5f);
         means.add(5.3f);
-        means.add(2.7f);
+        means.add(0.0f);
         means.add(1.8f);*/
 
         labels.add("Bicikl");
@@ -145,13 +145,15 @@ public class ChartFragment extends Fragment {
         labels.add("Kamion");
 
         /*ArrayList<Float> deviations = new ArrayList<>();
-        deviations.add(0.7f);
+        deviations.add(0.0f);
         deviations.add(1.2f);
         deviations.add(3.5f);
         deviations.add(1.0f);
         deviations.add(2.3f);
-        deviations.add(0.6f);
-        deviations.add(0.5f);*/
+        deviations.add(0.0f);
+        deviations.add(0.5f);
+
+        setupBarChartWithErrorBars(barChart, means, deviations, labels);*/
 
         typeOfStats.setOnClickListener(new View.OnClickListener() {
             @Override

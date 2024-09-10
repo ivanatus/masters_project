@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="410dp"
+    android:layout_height="730dp"
     android:background="@color/offwhite"
     tools:context=".VideoTransferFragment"
     android:orientation="vertical">
@@ -10,6 +10,7 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:scaleType="centerCrop"
         android:src="@drawable/fragment_bg"/>
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,19 +22,20 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="350dp"
+            android:textColor="@color/blue"
             android:gravity="center_horizontal"
             android:textStyle="italic"
             android:textSize="20sp"/>
 
         <Button
-                    android:id="@+id/transfer_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/blue"
-                    android:text="OK"
-                    android:textColor="@color/white"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="600dp"
-                    android:visibility="invisible"/>
+            android:id="@+id/transfer_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/blue"
+            android:text="OK"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:layout_marginTop="70dp"
+            android:visibility="visible"/>
     </LinearLayout>
 </FrameLayout>

@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -31,12 +30,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,9 +51,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -65,25 +60,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Path;
-import retrofit2.http.Query;
-
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.BarLineScatterCandleBubbleDataSet;
-import com.github.mikephil.charting.data.BarLineScatterCandleBubbleData;
-import com.github.mikephil.charting.utils.ColorTemplate;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     MapView mapView;
@@ -99,19 +75,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     boolean directions = false;
     boolean showToolbarMenu = false;
     public boolean isChartFragmentVisible = false, selectingGeopoints = false;
+    Globals globals = Globals.getInstance();
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) { return true; }
-
-    private void removeOverflowMenu(Menu menu) {
-        try {
-            Field field = MenuBuilder.class.getDeclaredField("mOptionalIconsVisible");
-            field.setAccessible(true);
-            field.set(menu, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     //adding the navigation bar to the layout
     @Override
@@ -298,6 +265,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
 
+        globals.setGlobalLongitude(longitude);
+        globals.setGlobalLatitude(latitude);
+
+        Log.d("GLOBALS", "MainActivity latitude: " + globals.getGlobalLatitude());
+        Log.d("GLOBALS", "MainActivity longitude: " + globals.getGlobalLongitude());
+
         // Center the map to the new location
         GeoPoint currentLocation = new GeoPoint(latitude, longitude);
         current_location = currentLocation;
@@ -443,15 +416,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         });
 
-        // Show the popup window next to the marker
-        // Calculate the offset in pixels
         int xOffset = dpToPx(50);
         int yOffset = dpToPx(100);
-        //popupWindow.showAsDropDown(mapView, (int) marker.getPosition().getLongitude(), (int) marker.getPosition().getLatitude(), Gravity.TOP);
-        // Ensure the popup is shown above the bottom navigation
         popupWindow.showAtLocation(mapView, Gravity.TOP | Gravity.START, xOffset, yOffset);
-        // Adjust position of the PopupWindow
-        //popupWindow.showAtLocation(mapView, Gravity.TOP, xOffset, yOffset);
     }
 
     private int dpToPx(int dp) {

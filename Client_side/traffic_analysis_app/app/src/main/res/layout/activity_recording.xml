@@ -20,8 +20,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_height="match_parent">
 
         <androidx.camera.view.PreviewView
             android:id="@+id/camera_preview"
@@ -30,10 +29,27 @@
             android:layout_gravity="center"
             android:layout_weight="0.9"
             android:background="#333333">
-
         </androidx.camera.view.PreviewView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/timerCardView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/offwhite"
+            android:visibility="gone"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="10dp">
+            <TextView
+                android:id="@+id/timerTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/blue"
+                android:layout_margin="5dp"
+                android:text="00:00" />
+        </androidx.cardview.widget.CardView>
+
         <ImageButton
-            android:id="@+id/video_capture"
+            android:id="@+id/video_capture1"
             android:src="@drawable/camera_record"
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -43,15 +59,15 @@
             android:layout_marginTop="690dp"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:id="@+id/video_capture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center|bottom"
-            android:layout_marginBottom="60dp"
+            android:layout_marginBottom="65dp"
             android:src="@drawable/camera_record"
-            android:tint="@color/white"
             android:alpha="0.8"
-            app:backgroundTint="@color/offwhite"/>
+            app:backgroundTint="@color/offwhite"
+            app:fabSize="normal"/>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"

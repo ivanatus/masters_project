@@ -19,6 +19,7 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -29,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -38,11 +40,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -60,7 +64,7 @@ import java.util.concurrent.ExecutionException;
 
 public class RecordingActivity extends AppCompatActivity implements VideoTransferFragment.OnVideoTransferListener  {
 
-    ImageButton capture_video;
+    FloatingActionButton capture_video;
     Recording recording = null;
     VideoCapture<Recorder> video_capture = null;
     PreviewView preview_view;
@@ -76,6 +80,10 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
     GeoPoint current_location;
     private VideoTransferFragment videoTransferFragment = VideoTransferFragment.newInstance();
     boolean showToolbarMenu = false;
+    Globals globals = Globals.getInstance();
+    private CountDownTimer countDownTimer;
+    CardView timerCardView;
+    TextView timerTextView;
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -137,6 +145,13 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        Log.d("GLOBALS", "RecordingActivity latitude: " + globals.getGlobalLatitude());
+        Log.d("GLOBALS", "RecordingActivity longitude: " + globals.getGlobalLongitude());
+
+        current_location = new GeoPoint(globals.getGlobalLatitude(), globals.getGlobalLongitude());
+        timerCardView = findViewById(R.id.timerCardView);
+        timerTextView = findViewById(R.id.timerTextView);
+
         bottom_navigation = findViewById(R.id.bottom_navigation);
         // Clear any selected item
         bottom_navigation.setOnNavigationItemSelectedListener(null);
@@ -158,7 +173,12 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
                     Intent info = new Intent(getApplicationContext(), InfoActivity.class);
                     startActivity(info);
                     finish();
+                } else if(id == R.id.settings) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
+
                 return false;
             }
         });
@@ -170,6 +190,25 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
 
         capture_video = findViewById(R.id.video_capture);
         preview_view = findViewById(R.id.camera_preview);
+
+        // Initialize the timer with 15 seconds (15000 milliseconds)
+        countDownTimer = new CountDownTimer(15000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Convert milliseconds to minutes and seconds
+                int secondsRemaining = (int) (millisUntilFinished / 1000);
+                String timeFormatted = String.format("00:%02d", secondsRemaining);
+
+                // Update the timer TextView
+                timerTextView.setText(timeFormatted);
+            }
+
+            @Override
+            public void onFinish() {
+                // Set the timer text to 00:00 when finished
+                timerTextView.setText("00:00");
+            }
+        };
 
         //handle click on recording button - stop or start recording
         capture_video.setOnClickListener(new View.OnClickListener() {
@@ -203,18 +242,19 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
 
     //method to handle capturing video recording
     private void captureVideo() {
-        capture_video.setImageResource(R.drawable.camera_pause); //change button image
+        //capture_video.setImageResource(R.drawable.camera_pause); //change button image
+        capture_video.setVisibility(View.GONE);
+        startTimer();
         Recording recording1 = recording;
         Log.d("Delete video", "captureVideo recording = " + String.valueOf(recording1));
         if (recording1 != null) { //stop the recording
             recording1.stop();
+            stopTimer();
             //sendToFirebase(recording);
             recording = null;
             return;
         }
         //save video recording to the device - name format is uid_year_month_day_hour_minute_second_millisecond.mp4
-        /*String name = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
-        name = FirebaseAuth.getInstance().getUid() + "_" + name;*/
         String name = "n";
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
@@ -257,7 +297,8 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
                     String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 }
-                capture_video.setImageResource(R.drawable.camera_record); //change button image
+                //capture_video.setImageResource(R.drawable.camera_record); //change button image
+                capture_video.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -347,6 +388,25 @@ public class RecordingActivity extends AppCompatActivity implements VideoTransfe
     public void onVideoTransferProgress(String progress) {
         if (videoTransferFragment != null) {
             videoTransferFragment.updateProgressText(progress);
+        }
+    }
+
+    // Call this method when you start recording
+    private void startTimer() {
+        // Start the recording logic here
+
+        // Start the countdown timer
+        timerCardView.setVisibility(View.VISIBLE);
+        countDownTimer.start();
+    }
+
+    // Call this method when you stop recording
+    private void stopTimer() {
+        // Stop the recording logic here
+        timerCardView.setVisibility(View.GONE);
+        // Cancel the countdown timer if recording is stopped before the timer finishes
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
         }
     }
 }

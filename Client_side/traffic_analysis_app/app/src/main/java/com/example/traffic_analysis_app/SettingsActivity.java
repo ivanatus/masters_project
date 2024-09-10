@@ -35,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText editTextTitle, editTextDescription;
     private TimePicker timePicker;
     private CheckBox checkBoxMonday, checkBoxTuesday, checkBoxWednesday, checkBoxThursday, checkBoxFriday, checkBoxSaturday, checkBoxSunday;
-    private Button buttonSetReminder, buttonDeleteReminder;
+    private Button buttonSetReminder;
     boolean showToolbarMenu = false;
     BottomNavigationView bottom_navigation;
     RecyclerView recyclerView;
@@ -115,7 +115,12 @@ public class SettingsActivity extends AppCompatActivity {
                     Intent home = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(home);
                     finish();
+                } else if(id == R.id.settings) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
+
                 return false;
             }
         });
@@ -133,13 +138,10 @@ public class SettingsActivity extends AppCompatActivity {
         LinearLayout newReminderSetup = findViewById(R.id.newReminderSetup);
 
         buttonSetReminder = findViewById(R.id.buttonSetReminder);
-        buttonDeleteReminder = findViewById(R.id.buttonDeleteReminder);
-
-        buttonDeleteReminder.setOnClickListener(v -> deleteReminders());
 
         recyclerView = findViewById(R.id.reminderList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ReminderAdapter(loadReminders()));
+        recyclerView.setAdapter(new ReminderAdapter(this, loadReminders()));
 
         FloatingActionButton newReminder = findViewById(R.id.newReminder);
         newReminder.setOnClickListener(new View.OnClickListener() {
@@ -174,35 +176,6 @@ public class SettingsActivity extends AppCompatActivity {
         int hour = timePicker.getCurrentHour();
         int minute = timePicker.getCurrentMinute();
 
-        /*if (checkBoxMonday.isChecked()) {
-            scheduleReminder(Calendar.MONDAY, hour, minute, title, description);
-            checkBoxMonday.setChecked(false);
-        }
-        if (checkBoxTuesday.isChecked()) {
-            scheduleReminder(Calendar.TUESDAY, hour, minute, title, description);
-            checkBoxTuesday.setChecked(false);
-        }
-        if (checkBoxWednesday.isChecked()) {
-            scheduleReminder(Calendar.WEDNESDAY, hour, minute, title, description);
-            checkBoxWednesday.setChecked(false);
-        }
-        if (checkBoxThursday.isChecked()) {
-            scheduleReminder(Calendar.THURSDAY, hour, minute, title, description);
-            checkBoxThursday.setChecked(false);
-        }
-        if (checkBoxFriday.isChecked()) {
-            scheduleReminder(Calendar.FRIDAY, hour, minute, title, description);
-            checkBoxFriday.setChecked(false);
-        }
-        if (checkBoxSaturday.isChecked()) {
-            scheduleReminder(Calendar.SATURDAY, hour, minute, title, description);
-            checkBoxSaturday.setChecked(false);
-        }
-        if (checkBoxSunday.isChecked()) {
-            scheduleReminder(Calendar.SUNDAY, hour, minute, title, description);
-            checkBoxSunday.setChecked(false);
-        }*/
-
         // Collect all the selected days
         List<Integer> selectedDays = new ArrayList<>();
         if (checkBoxMonday.isChecked()) selectedDays.add(Calendar.MONDAY);
@@ -216,6 +189,8 @@ public class SettingsActivity extends AppCompatActivity {
         // Schedule a single reminder that repeats on the selected days
         if (!selectedDays.isEmpty()) {
             scheduleReminder(selectedDays, hour, minute, title, description);
+            String test = hour + ", " + minute + ", " + title + ", " + description;
+            Log.d("ReminderSetup", "In setReminders: " + test);
             // Clear checkboxes after setting reminder
             checkBoxMonday.setChecked(false);
             checkBoxTuesday.setChecked(false);
@@ -226,22 +201,12 @@ public class SettingsActivity extends AppCompatActivity {
             checkBoxSunday.setChecked(false);
         }
 
-        recyclerView.setAdapter(new ReminderAdapter(loadReminders()));
+        recyclerView.setAdapter(new ReminderAdapter(this, loadReminders()));
         editTextTitle.setText("");
         editTextDescription.setText("");
     }
 
     private void scheduleReminder(List<Integer> daysOfWeek, int hour, int minute, String title, String description) {
-        /*Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
-        calendar.set(Calendar.SECOND, 0);
-
-        if (calendar.before(Calendar.getInstance())) {
-            calendar.add(Calendar.WEEK_OF_YEAR, 1); // If the time is before now, schedule for next week
-        }*/
-
         Calendar calendar = null;
         for (int dayOfWeek : daysOfWeek) {
             calendar = Calendar.getInstance();
@@ -263,42 +228,34 @@ public class SettingsActivity extends AppCompatActivity {
         saveReminder(daysOfWeek, hour, minute, title, description);
     }
 
-    private void deleteReminders() {
-        int hour = timePicker.getCurrentHour();
-        int minute = timePicker.getCurrentMinute();
+    public void deleteReminder(List<Integer> daysOfWeek, int hour, int minute, String title, String description) {
+        SharedPreferences sharedPreferences = getSharedPreferences("Reminders", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        if (checkBoxMonday.isChecked()) {
-            cancelReminder(Calendar.MONDAY, hour, minute);
+        StringBuilder daysString = new StringBuilder();
+        for (int day : daysOfWeek) {
+            daysString.append(day).append(",");
         }
-        if (checkBoxTuesday.isChecked()) {
-            cancelReminder(Calendar.TUESDAY, hour, minute);
+
+        // Remove the last comma
+        if (daysString.length() > 0) {
+            daysString.deleteCharAt(daysString.length() - 1);
         }
-        if (checkBoxWednesday.isChecked()) {
-            cancelReminder(Calendar.WEDNESDAY, hour, minute);
-        }
-        if (checkBoxThursday.isChecked()) {
-            cancelReminder(Calendar.THURSDAY, hour, minute);
-        }
-        if (checkBoxFriday.isChecked()) {
-            cancelReminder(Calendar.FRIDAY, hour, minute);
-        }
-        if (checkBoxSaturday.isChecked()) {
-            cancelReminder(Calendar.SATURDAY, hour, minute);
-        }
-        if (checkBoxSunday.isChecked()) {
-            cancelReminder(Calendar.SUNDAY, hour, minute);
-        }
+
+        // Create the key for the reminder
+        String reminderKey = title + ";" + description + ";" + daysString + ";" + hour + ";" + minute;
+
+        // Remove the reminder from SharedPreferences
+        editor.remove(reminderKey);
+        editor.apply();  // Apply changes
+
+        recyclerView.setAdapter(new ReminderAdapter(this, loadReminders()));
     }
+
 
     private void saveReminder(List<Integer> daysOfWeek, int hour, int minute, String title, String description) {
         SharedPreferences sharedPreferences = getSharedPreferences("Reminders", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        // Create a unique key for each reminder
-        //String reminderKey = dayOfWeek + "_" + hour + "_" + minute;
-
-        // Store the reminder details in a single string
-        //String reminderDetails = dayOfWeek + ";" + hour + ";" + minute + ";" + title + ";" + description;
 
         StringBuilder daysString = new StringBuilder();
         for (int day : daysOfWeek) {
@@ -331,38 +288,32 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private List<Reminder> loadReminders() {
+        Log.d("ReminderSetup", "In loadReminders()");
         SharedPreferences sharedPreferences = getSharedPreferences("Reminders", MODE_PRIVATE);
         Map<String, ?> allReminders = sharedPreferences.getAll();
         List<Reminder> reminderList = new ArrayList<>();
 
         for (Map.Entry<String, ?> entry : allReminders.entrySet()) {
             String[] reminderDetails = ((String) entry.getValue()).split(";");
-            /*int dayOfWeek = Integer.parseInt(reminderDetails[0]);
-            int hour = Integer.parseInt(reminderDetails[1]);
-            int minute = Integer.parseInt(reminderDetails[2]);
-            String title = reminderDetails[3];
-            String description = reminderDetails[4];
-
-            reminderList.add(new Reminder(dayOfWeek, hour, minute, title, description));*/
 
             // Ensure the reminderDetails array has the expected number of elements (5 in this case)
-            if (reminderDetails.length == 5) {
+            String test = "";
+            for(int i = 0; i < reminderDetails.length; i++){
+                test = test + reminderDetails[i] + "__";
+            }
+            Log.d("ReminderSetup", "setup: " + test);
+            if (reminderDetails.length >= 5) {
                 try {
                     String daysString = reminderDetails[0];
                     //int dayOfWeek = Integer.parseInt(reminderDetails[0]);
-                    int hour = Integer.parseInt(reminderDetails[1]);
-                    int minute = Integer.parseInt(reminderDetails[2]);
-                    String title = reminderDetails[3];
-                    String description = reminderDetails[4];
+                    int hour = Integer.parseInt(reminderDetails[reminderDetails.length - 2]);
+                    int minute = Integer.parseInt(reminderDetails[reminderDetails.length - 1]);
+                    String title = reminderDetails[0];
+                    String description = reminderDetails[1];
+                    String days = reminderDetails[2];
+                    String[] daysArray = days.split(",");
 
-                    // Split daysString into individual days
-                    String[] daysArray = daysString.split(",");
-                    for (String day : daysArray) {
-                        int dayOfWeek = Integer.parseInt(day);
-                        reminderList.add(new Reminder(daysArray, hour, minute, title, description));
-                    }
-
-                    //reminderList.add(new Reminder(daysArray, hour, minute, title, description));
+                    reminderList.add(new Reminder(daysArray, hour, minute, title, description));
                 } catch (NumberFormatException e) {
                     // Handle the case where the data cannot be parsed into an integer
                     Log.e("ReminderLoading", "Failed to parse reminder data: " + entry.getValue(), e);

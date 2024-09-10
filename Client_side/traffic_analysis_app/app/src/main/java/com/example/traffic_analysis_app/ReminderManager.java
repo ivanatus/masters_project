@@ -19,7 +19,7 @@ public class ReminderManager {
         intent.putExtra("title", title);
         intent.putExtra("message", message);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -33,7 +33,7 @@ public class ReminderManager {
         }
 
         // Save the reminder in SharedPreferences
-        saveReminder(context, requestCode, calendar.getTimeInMillis());
+        //saveReminder(context, requestCode, calendar.getTimeInMillis());
     }
 
     // Generate a unique request code based on the calendar's day, hour, and minute
@@ -48,7 +48,14 @@ public class ReminderManager {
         int requestCode = getUniqueRequestCode(calendar);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+        );
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         if (alarmManager != null) {
