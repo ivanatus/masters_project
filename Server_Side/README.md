@@ -6,7 +6,7 @@ Pokretano na Linux Ubuntu 22.04.3 OS-u, AMD Ryzen 7 procesoru s AMD Radeon RENOI
 ## Instalacija i pokretanje programa
 - Kloniranje repozitorija
 ```
-git clone https://github.com/ivanatus/KIK_projekt
+git clone https://github.com/ivanatus/masters_project
 ```
 - Promjena direktorija
 ```
